@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Keuangan & Akun - PTJBS NEV</title>
+    <!-- CDN Link Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- Kustomisasi Variabel Tema & Glassmorphism --- */
+        :root[data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(30, 41, 59, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-bg: rgba(15, 23, 42, 0.6);
+            --card-active: rgba(99, 102, 241, 0.2);
+            --accent-color: #6366f1;
+        }
+        :root[data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(15, 23, 42, 0.08);
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --sidebar-bg: rgba(255, 255, 255, 0.8);
+            --card-active: rgba(99, 102, 241, 0.15);
+            --accent-color: #4f46e5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.5s ease, color 0.3s ease;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- Loading Screen --- */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-gradient);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        /* --- Layout --- */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        #sidebar {
+            min-width: 260px;
+            max-width: 260px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #sidebar.active {
+            margin-left: -260px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        #sidebar ul p {
+            padding: 10px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 20px;
+            font-size: 1.05em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        #sidebar ul li a:hover, #sidebar ul li a.active {
+            background: var(--card-active);
+            border-left-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        #content {
+            width: 100%;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        /* --- Komponen Form & Table --- */
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            border-radius: 8px;
+        }
+        :root[data-theme="light"] .form-control, :root[data-theme="light"] .form-select {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+        }
+        
+        .table {
+            color: var(--text-color) !important;
+        }
+        .table th {
+            border-bottom: 2px solid var(--glass-border) !important;
+        }
+        .table td {
+            border-bottom: 1px solid var(--glass-border) !important;
+            vertical-align: middle;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+        .page-section.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Mobile Tweak */
+        @media (max-width: 768px) {
+            #sidebar { margin-left: -260px; position: fixed; height: 100vh; }
+            #sidebar.active { margin-left: 0; }
+            #content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="spinner-border text-indigo" style="width: 3rem; height: 3rem; color: var(--accent-color)" role="status"></div>
+        <h5 class="mt-3 text-center opacity-75">Memuat Sistem...</h5>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+        <div id="liveToast" class="toast glass-panel" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-transparent border-bottom border-secondary border-opacity-25 text-inherit">
+                <i class="bi bi-info-circle-fill me-2 text-primary" id="toastIcon"></i>
+                <strong class="me-auto" id="toastTitle">Notifikasi</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastBody">Pesan default.</div>
+        </div>
+    </div>
+
+    <!-- HALAMAN LOGIN (Terpisah secara struktural) -->
+    <div id="login-wrapper" class="container d-none">
+        <div class="row min-vh-100 justify-content-center align-items-center">
+            <div class="col-md-5 col-sm-8 col-11">
+                <div class="glass-panel p-5 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-shield-lock-fill display-4 text-primary"></i>
+                        <h3 class="mt-2 fw-bold">PTJBS NEV System</h3>
+                        <p class="text-muted small">Silakan login untuk mengakses dashboard manajemen.</p>
+                    </div>
+                    <form id="loginForm" novalidate>
+                        <div class="text-start mb-3">
+                            <label class="form-label small">User ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-secondary border-opacity-25 text-muted"><i class="bi bi-person"></i></span>
+                                <input type="text" id="loginUser" class="form-control text-start" required autocomplete="username">
+                            </div>
+                        </div>
+                        <div class="text-start mb-3">
+                            <label class="form-label small">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-secondary border-opacity-25 text-muted"><i class="bi bi-key"></i></span>
+                                <input type="password" id="loginPassword" class="form-control text-start" required autocomplete="current-password">
+                                <button class="btn btn-outline-secondary border-opacity-25" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label small" for="rememberMe">Ingat Saya</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-switch form-check-input theme-toggle" type="checkbox" id="themeSwitchLogin">
+                                <label class="form-check-label small" for="themeSwitchLogin"><i class="bi bi-moon-stars"></i></label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="btnLoginSubmit">
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                            Masuk Ke Sistem
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HALAMAN UTAMA / DASHBOARD -->
+    <div id="main-wrapper" class="wrapper d-none">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0 fw-bold text-primary">PTJBS NEV</h5>
+                    <span class="text-muted small">Admin Panel v2.0</span>
+                </div>
+                <button type="button" id="sidebarCollapseMobile" class="btn d-md-none text-inherit p-0"><i class="bi bi-x-lg fs-4"></i></button>
+            </div>
+            <ul class="list-unstyled components flex-column mb-auto mt-3">
+                <li><a href="#" class="nav-link-item active" data-target="sec-dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link-item" data-target="sec-data-rekening"><i class="bi bi-wallet2"></i> Data Rekening</a></li>
+                <li><a href="#" class="nav-link-item" data-target="sec-tambah-rekening"><i class="bi bi-plus-circle"></i> Tambah Rekening</a></li>
+                <li><a href="#" class="nav-link-item" data-target="sec-data-email"><i class="bi bi-envelope"></i> Data Email</a></li>
+                <li><a href="#" class="nav-link-item" data-target="sec-riwayat-admin"><i class="bi bi-clock-history"></i> Riwayat Admin</a></li>
+                <li><a href="#" class="nav-link-item" data-target="sec-setting"><i class="bi bi-gear"></i> Setting</a></li>
+                <li class="mt-4"><a href="#" id="btnLogout" class="text-danger"><i class="bi bi-box-arrow-left"></i> Keluar (Logout)</a></li>
+            </ul>
+        </nav>
+
+        <!-- Konten Utama -->
+        <div id="content">
+            <!-- Topbar / Navbar atas -->
+            <div class="glass-panel p-3 mb-4 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" id="sidebarCollapse" class="btn btn-sm btn-outline-secondary border-opacity-25"><i class="bi bi-list fs-5"></i></button>
+                    <h4 class="mb-0 fw-semibold page-title-text">Dashboard Analitik</h4>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input theme-toggle" type="checkbox" id="themeSwitchMain">
+                        <label class="form-check-label d-none d-sm-inline" for="themeSwitchMain">Mode Gelap</label>
+                    </div>
+                    <div class="vertical-divider border-end h-100 mx-2"></div>
+                    <div class="text-end d-none d-sm-block">
+                        <p class="mb-0 small fw-bold" id="currentAdminName">Administrator</p>
+                        <span class="text-muted small" style="font-size:0.75rem;">Active Token Session</span>
+                    </div>
+                    <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                </div>
+            </div>
+
+            <!-- SECTION: DASHBOARD -->
+            <div id="sec-dashboard" class="page-section active-section">
+                <!-- KPI Cards Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-2 col-md-4 col-sm-6">
+                        <div class="glass-panel p-3 text-center">
+                            <span class="text-muted small uppercase fw-semibold">Total Akun</span>
+                            <h2 class="mt-2 mb-0 fw-bold text-primary" id="kpi-total-akun">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6">
+                        <div class="glass-panel p-3 text-center">
+                            <span class="text-muted small uppercase fw-semibold">Rekening Aktif</span>
+                            <h2 class="mt-2 mb-0 fw-bold text-success" id="kpi-rek-aktif">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6">
+                        <div class="glass-panel p-3 text-center">
+                            <span class="text-muted small uppercase fw-semibold">Rekening Nonaktif</span>
+                            <h2 class="mt-2 mb-0 fw-bold text-danger" id="kpi-rek-non">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6">
+                        <div class="glass-panel p-3 text-center">
+                            <span class="text-muted small uppercase fw-semibold">Total Email</span>
+                            <h2 class="mt-2 mb-0 fw-bold text-warning" id="kpi-total-email">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6">
+                        <div class="glass-panel p-3 text-center">
+                            <span class="text-muted small uppercase fw-semibold">Total Admin</span>
+                            <h2 class="mt-2 mb-0 fw-bold text-info" id="kpi-total-admin">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6">
+                        <div class="glass-panel p-3 text-center">
+                            <span class="text-muted small uppercase fw-semibold">Last Update</span>
+                            <p class="mt-2 mb-0 text-truncate font-monospace small" id="kpi-last-update">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5 class="mb-3 fw-semibold">Status Distribusi Rekening</h5>
+                            <div style="position: relative; height:250px;">
+                                <canvas id="chartStatusRekening"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5 class="mb-3 fw-semibold">Kategori Jenis Bank</h5>
+                            <div style="position: relative; height:250px;">
+                                <canvas id="chartJenisBank"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities Table -->
+                <div class="glass-panel p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 fw-semibold">Aktivitas & Mutasi Log Terbaru</h5>
+                        <button class="btn btn-sm btn-outline-primary btn-refresh-data"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-borderless" id="tableAktivitasTerbaru">
+                            <thead>
+                                <tr><th>Waktu</th><th>Pelaku</th><th>Aksi / Modul</th><th>Perangkat & IP</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="4" class="text-center text-muted">Sedang mengambil data terbaru...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: DATA REKENING -->
+            <div id="sec-data-rekening" class="page-section">
+                <div class="glass-panel p-4">
+                    <div class="d-flex justify-content-between flex-wrap gap-2 align-items-center mb-4">
+                        <h5 class="mb-0 fw-semibold">Database Rekening Bank Terdaftar</h5>
+                        <div class="d-flex gap-2">
+                            <button id="btnExportExcelRek" class="btn btn-sm btn-success"><i class="bi bi-file-earmark-spreadsheet"></i> Excel</button>
+                            <button id="btnExportPdfRek" class="btn btn-sm btn-danger"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="datatableRekening" class="table table-striped table-hover w-100">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Bank</th><th>Jenis</th><th>Atas Nama</th><th>No Rekening</th><th>Sandi Login</th><th>Sandi Trx</th><th>Status</th><th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: TAMBAH / EDIT REKENING FORM -->
+            <div id="sec-tambah-rekening" class="page-section">
+                <div class="glass-panel p-4 max-width-md mx-auto" style="max-width: 800px;">
+                    <h5 class="mb-4 fw-semibold" id="formRekeningTitle"><i class="bi bi-plus-circle-fill text-primary"></i> Formulir Registrasi Akun Rekening Baru</h5>
+                    <form id="formRekeningData" class="row g-3" novalidate>
+                        <input type="hidden" id="rekId">
+                        <div class="col-md-6">
+                            <label class="form-label">Jenis Bank</label>
+                            <select class="form-select" id="rekJenisBank" required>
+                                <option value="" selected disabled>Pilih Bank...</option>
+                                <option value="BCA">BCA (Bank Central Asia)</option>
+                                <option value="BRI">BRI (Bank Rakyat Indonesia)</option>
+                                <option value="BNI">BNI (Bank Negara Indonesia)</option>
+                                <option value="Mandiri">Mandiri</option>
+                                <option value="CIMB">CIMB Niaga</option>
+                                <option value="Lainnya">Lainnya / E-Wallet</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Jenis Rekening</label>
+                            <input type="text" class="form-control" id="rekJenisRekening" placeholder="Contoh: Tabungan Bisnis, Giro" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Bank Resmi</label>
+                            <input type="text" class="form-control" id="rekNamaBank" placeholder="Masukkan nama bank lengkap" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Pemilik Rekening (AN)</label>
+                            <input type="text" class="form-control" id="rekNamaRekening" placeholder="Sesuai nama di buku tabungan" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor Rekening / Virtual Account</label>
+                            <input type="text" class="form-control" id="rekNomorRekening" placeholder="Masukkan angka tanpa strip" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Terdaftar</label>
+                            <input type="email" class="form-control" id="rekEmailTerdaftar" placeholder="alamat@email.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sandi / Password Login Internet Banking</label>
+                            <input type="text" class="form-control" id="rekSandiLogin" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sandi / PIN Transaksi (Token/M-Banking)</label>
+                            <input type="text" class="form-control" id="rekSandiTransaksi" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Aktif Rekening</label>
+                            <input type="date" class="form-control" id="rekTanggalAktif" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status Validasi Lapangan</label>
+                            <select class="form-select" id="rekStatus" required>
+                                <option value="Aktif">Aktif / Operasional</option>
+                                <option value="Nonaktif">Nonaktif / Terblokir / Freeze</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mt-4 d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-secondary btn-cancel-rek">Batal</button>
+                            <button type="submit" class="btn btn-primary px-4" id="btnSubmitRekening">Simpan Perubahan Data</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SECTION: DATA EMAIL -->
+            <div id="sec-data-email" class="page-section">
+                <div class="glass-panel p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h5 class="mb-0 fw-semibold">Manajemen Kredensial Email Infrastruktur</h5>
+                        <button type="button" class="btn btn-sm btn-primary" id="btnBukaModalTambahEmail"><i class="bi bi-plus-lg"></i> Tambah Log Email</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover w-100" id="tableEmailData">
+                            <thead>
+                                <tr><th>User ID Email</th><th>Password Akun</th><th>Email Recovery / Backup</th><th>Aksi Operasional</th></tr>
+                            </thead>
+                            <tbody id="tbodyEmail"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: RIWAYAT ADMIN -->
+            <div id="sec-riwayat-admin" class="page-section">
+                <div class="glass-panel p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 fw-semibold">Audit Trail & Security Log System</h5>
+                        <input type="text" id="searchRiwayat" class="form-control form-control-sm w-25" placeholder="Cari Log audit...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tableFullRiwayat">
+                            <thead>
+                                <tr><th>Timestamp</th><th>Operator Identity</th><th>Device Model/OS</th><th>IP Address</th><th>Deskripsi Mutasi Operasi</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: SETTING -->
+            <div id="sec-setting" class="page-section">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5 class="mb-3 fw-semibold"><i class="bi bi-shield-lock-fill text-warning"></i> Ganti Password Administrator</h5>
+                            <form id="formGantiPassword" novalidate>
+                                <div class="mb-3">
+                                    <label class="form-label">Password Lama</label>
+                                    <input type="password" class="form-control" id="passLama" required autocomplete="current-password">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password Baru</label>
+                                    <input type="password" class="form-control" id="passBaru" required autocomplete="new-password">
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-warning w-100">Eksekusi Perubahan Kredensial</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5 class="mb-3 fw-semibold"><i class="bi bi-person-plus-fill text-success"></i> Daftarkan Admin Baru</h5>
+                            <form id="formTambahAdmin" novalidate>
+                                <div class="mb-3">
+                                    <label class="form-label">User ID Admin Baru</label>
+                                    <input type="text" class="form-control" id="adminNewUser" required autocomplete="username">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password Utama</label>
+                                    <input type="password" class="form-control" id="adminNewPass" required autocomplete="new-password">
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-success w-100">Daftarkan Hak Akses Operator</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="glass-panel p-4">
+                            <h5 class="mb-3 fw-semibold"><i class="bi bi-database-fill-gear text-info"></i> Disaster Recovery & Database Maintenance</h5>
+                            <p class="text-muted small">Kelola pencadangan repositori berbasis JSON internal Apps Script langsung ke komputer lokal Anda secara aman.</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button id="btnBackupDb" class="btn btn-info text-white btn-sm"><i class="bi bi-cloud-arrow-down-fill"></i> Download Backup Database (JSON)</button>
+                                <button id="btnRestoreDbTrigger" class="btn btn-outline-danger btn-sm"><i class="bi bi-cloud-arrow-up-fill"></i> Restore System Database</button>
+                                <input type="file" id="fileRestoreDb" class="d-none" accept=".json">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP UNTUK TAMBAH/EDIT EMAIL -->
+    <div class="modal fade" id="modalEmail" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-panel" style="background: var(--sidebar-bg); border: 1px solid var(--glass-border);">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title fw-semibold" id="modalEmailTitle">Formulir Log Kredensial Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formEmailData" novalidate>
+                    <div class="modal-body">
+                        <input type="hidden" id="emailOldUser">
+                        <input type="hidden" id="emailMode" value="add">
+                        <div class="mb-3">
+                            <label class="form-label">User ID Email</label>
+                            <input type="email" class="form-control" id="emailUser" required placeholder="example@domain.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password Kunci</label>
+                            <input type="text" class="form-control" id="emailPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Backup / Pemulihan</label>
+                            <input type="email" class="form-control" id="emailBackup" required placeholder="recovery@domain.com">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-sm btn-primary" id="btnSubmitFormEmail">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEPENDENCY INJECTION JAVASCRIPT CORE -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- DataTables Export Extension Library Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+    <script>
+        // --- JAVASCRIPT GLOBAL ARCHITECTURE & CORE SYSTEM ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbwlNEEVw_Htu33d_9C2ZToiKEHNhUX94v1DU4PTQ8xyFdAHpuPeESeeYcg687kCTza5nw/exec";
+        
+        // State Management Sistem Aplikasi
+        let appState = {
+            sessionToken: null,
+            adminUser: null,
+            lastActivity: Date.now(),
+            database: { rekening: [], email: [], riwayat: [], admin: [] },
+            instances: { chartStatus: null, chartBank: null, dataTableRek: null }
+        };
+
+        // Konfigurasi Interval Refresh Otomatis
+        let autoRefreshTimer = null;
+
+        // --- SECURITY & UTILITY FUNCTIONS ---
+        function escapeHtml(string) {
+            return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '=': '&#x3D;' }[s];
+            });
+        }
+
+        function formatTanggal(isoString) {
+            if (!isoString) return "-";
+            try {
+                const d = new Date(isoString);
+                if (isNaN(d.getTime())) return isoString;
+                return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + " WIB";
+            } catch (e) { return isoString; }
+        }
+
+        function showToast(title, message, type = 'info') {
+            const toastEl = document.getElementById('liveToast');
+            const iconEl = document.getElementById('toastIcon');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastBody').innerText = message;
+            
+            iconEl.className = "bi me-2 ";
+            if (type === 'success') iconEl.className += "bi-check-circle-fill text-success";
+            else if (type === 'error') iconEl.className += "bi-exclamation-triangle-fill text-danger";
+            else iconEl.className += "bi-info-circle-fill text-primary";
+
+            const bsToast = new bootstrap.Toast(toastEl);
+            bsToast.show();
+        }
+
+        function updateActivity() {
+            appState.lastActivity = Date.now();
+        }
+
+        // --- SISTEM DRIVER FETCH DATA (CENTRALIZED CRUD) ---
+        async function hitAPI(actionName, payload = {}) {
+            updateActivity();
+            const targetUrl = new URL(API_URL);
+            targetUrl.searchParams.append('action', actionName);
+            if (appState.sessionToken) {
+                targetUrl.searchParams.append('token', appState.sessionToken);
+                targetUrl.searchParams.append('operator', appState.adminUser);
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 Detik Limit Limitasi Execution Apps Script
+
+            try {
+                const response = await fetch(targetUrl.toString(), {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GAS Web App CORS Workaround
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                const data = await response.json();
+                if (data.status === 'error') {
+                    throw new Error(data.message || 'Eksekusi server melaporkan status kegagalan.');
+                }
+                return data;
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.error(`API Error pada Aksi [${actionName}]: `, err);
+                throw err;
+            }
+        }
+
+        // --- INITIALIZATION INTERFACES ON DOM MOUNT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            initCoreTheme();
+            setupInteractivityListeners();
+            await checkSessionGate();
+            hideLoadingScreen();
+        });
+
+        function hideLoadingScreen() {
+            const ls = document.getElementById('loading-screen');
+            ls.style.opacity = '0';
+            setTimeout(() => ls.style.visibility = 'hidden', 500);
+        }
+
+        function showLoadingScreen(msg = "Memuat Sistem...") {
+            const ls = document.getElementById('loading-screen');
+            ls.querySelector('h5').innerText = msg;
+            ls.style.visibility = 'visible';
+            ls.style.opacity = '1';
+        }
+
+        // --- HANDLING TEMA LIGHT / DARK MODE ---
+        function initCoreTheme() {
+            const savedTheme = localStorage.getItem('ptjbs-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.querySelectorAll('.theme-toggle').forEach(el => {
+                el.checked = (savedTheme === 'dark');
+            });
+        }
+
+        function switchTheme(isDark) {
+            const targetTheme = isDark ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('ptjbs-theme', targetTheme);
+            document.querySelectorAll('.theme-toggle').forEach(el => el.checked = isDark);
+            showToast("Perubahan Tema", `Berhasil beralih ke Mode ${targetTheme === 'dark' ? 'Gelap' : 'Terang'}`, 'info');
+            if (appState.instances.chartStatus) renderAnalyticsCharts(); // Re-render grafik agar menyesuaikan warna teks default
+        }
+
+        // --- SISTEM VALIDASI DAN MANAJEMEN SESSION ---
+        async function checkSessionGate() {
+            const localSession = localStorage.getItem('ptjbs_session');
+            const rememberMe = localStorage.getItem('ptjbs_remember') === 'true';
+
+            if (localSession) {
+                try {
+                    const sessionData = JSON.parse(localSession);
+                    // Cek masa kadaluarsa jika tidak mencentang 'Remember Me' (Maksimal 24 Jam demi keamanan jika tab ditinggal)
+                    if (!rememberMe && (Date.now() - sessionData.timestamp > 1440 * 60 * 1000)) {
+                        throw new Error("Sesi login temporer kadaluarsa.");
+                    }
+                    appState.sessionToken = sessionData.token;
+                    appState.adminUser = sessionData.user;
+                    
+                    document.getElementById('currentAdminName').innerText = appState.adminUser;
+                    document.getElementById('login-wrapper').classList.add('d-none');
+                    document.getElementById('main-wrapper').classList.remove('d-none');
+                    
+                    startSessionWatchdog();
+                    await synchronizeCoreDatabase();
+                    navigateToSection('sec-dashboard');
+                } catch (e) {
+                    clearSessionData();
+                    showLoginInterface();
+                }
+            } else {
+                showLoginInterface();
+            }
+        }
+
+        function showLoginInterface() {
+            document.getElementById('main-wrapper').classList.add('d-none');
+            document.getElementById('login-wrapper').classList.remove('d-none');
+            stopSessionWatchdog();
+        }
+
+        function clearSessionData() {
+            localStorage.removeItem('ptjbs_session');
+            appState.sessionToken = null;
+            appState.adminUser = null;
+        }
+
+        function startSessionWatchdog() {
+            stopSessionWatchdog();
+            // Pengecekan aktivitas tidak aktif selama 30 menit
+            autoRefreshTimer = setInterval(() => {
+                if (Date.now() - appState.lastActivity > 30 * 60 * 1000) {
+                    executeLogoutAction(true);
+                }
+            }, 60000); // Cek berkala setiap 1 menit
+        }
+
+        function stopSessionWatchdog() {
+            if (autoRefreshTimer) {
+                clearInterval(autoRefreshTimer);
+                autoRefreshTimer = null;
+            }
+        }
+
+        async function executeLogoutAction(isAuto = false) {
+            showLoadingScreen("Sedang menghancurkan session...");
+            clearSessionData();
+            showLoginInterface();
+            hideLoadingScreen();
+            if (isAuto) {
+                Swal.fire("Sesi Berakhir", "Anda telah otomatis dikeluarkan dari sistem karena tidak ada aktivitas selama 30 menit.", "warning");
+            } else {
+                Swal.fire("Berhasil Keluar", "Kredensial akses Anda dari perangkat ini berhasil dihapus.", "success");
+            }
+        }
+
+        // --- SYNCHRONIZE DATABASE DENGAN CORE SERVER ---
+        async function synchronizeCoreDatabase() {
+            try {
+                // Mengambil bundle data keseluruhan untuk minimalisasi Request round-trip
+                const response = await hitAPI('getAllData');
+                if (response && response.data) {
+                    appState.database.rekening = response.data.rekening || [];
+                    appState.database.email = response.data.email || [];
+                    appState.database.riwayat = response.data.riwayat || [];
+                    appState.database.admin = response.data.admin || [];
+                    
+                    refreshUiComponents();
+                }
+            } catch (err) {
+                showToast("Sinkronisasi Gagal", "Gagal memperbarui database lokal dari Cloud Server", "error");
+            }
+        }
+
+        function refreshUiComponents() {
+            // Update Tampilan KPI Angka
+            const totalRek = appState.database.rekening.length;
+            const rekAktif = appState.database.rekening.filter(r => r.status === 'Aktif').length;
+            const rekNon = totalRek - rekAktif;
+
+            document.getElementById('kpi-total-akun').innerText = totalRek + appState.database.email.length;
+            document.getElementById('kpi-rek-aktif').innerText = rekAktif;
+            document.getElementById('kpi-rek-non').innerText = rekNon;
+            document.getElementById('kpi-total-email').innerText = appState.database.email.length;
+            document.getElementById('kpi-total-admin').innerText = appState.database.admin.length;
+            document.getElementById('kpi-last-update').innerText = new Date().toLocaleTimeString('id-ID') + " WIB";
+
+            // Update Tabel dashboard kilat (5 baris terakhir)
+            const tbodyQuickAct = document.querySelector('#tableAktivitasTerbaru tbody');
+            tbodyQuickAct.innerHTML = "";
+            const shortRiwayat = [...appState.database.riwayat].reverse().slice(0, 5);
+            
+            if (shortRiwayat.length === 0) {
+                tbodyQuickAct.innerHTML = "<tr><td colspan='4' class='text-center text-muted'>Belum ada aktivitas terekam.</td></tr>";
+            } else {
+                shortRiwayat.forEach(row => {
+                    tbodyQuickAct.innerHTML += `
+                        <tr>
+                            <td><small>${formatTanggal(row.timestamp)}</small></td>
+                            <td><span class="badge bg-secondary">${escapeHtml(row.admin)}</span></td>
+                            <td><span class="text-primary fw-medium">${escapeHtml(row.aksi)}</span></td>
+                            <td><small class="text-muted">${escapeHtml(row.perangkat)} (${escapeHtml(row.ip)})</small></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Update Sinkronisasi Element View Besar
+            renderAnalyticsCharts();
+            populateDataTablesRekening();
+            populateEmailTable();
+            populateRiwayatTable();
+        }
+
+        // --- GENERATE DAN RENDER GRAFIK CHART.JS ---
+        function renderAnalyticsCharts() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const labelColor = isDark ? '#94a3b8' : '#64748b';
+            const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+
+            // 1. Chart Status Rekening
+            const rekAktif = appState.database.rekening.filter(r => r.status === 'Aktif').length;
+            const rekNon = appState.database.rekening.filter(r => r.status !== 'Aktif').length;
+
+            if (appState.instances.chartStatus) appState.instances.chartStatus.destroy();
+            const ctxStatus = document.getElementById('chartStatusRekening').getContext('2d');
+            appState.instances.chartStatus = new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aktif / Valid', 'Nonaktif / Suspend'],
+                    datasets: [{
+                        data: [rekAktif, rekNon],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: labelColor } } }
+                }
+            });
+
+            // 2. Chart Kategori Distribusi Bank
+            const bankCounts = {};
+            appState.database.rekening.forEach(r => {
+                const b = r.jenisBank || 'Lainnya';
+                bankCounts[b] = (bankCounts[b] || 0) + 1;
+            });
+
+            if (appState.instances.chartBank) appState.instances.chartBank.destroy();
+            const ctxBank = document.getElementById('chartJenisBank').getContext('2d');
+            appState.instances.chartBank = new Chart(ctxBank, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(bankCounts),
+                    datasets: [{
+                        label: 'Jumlah Rekening',
+                        data: Object.values(bankCounts),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: labelColor } },
+                        y: { grid: { color: gridColor }, ticks: { color: labelColor, stepSize: 1 } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // --- POPULASI DATA KE DATATABLES ---
+        function populateDataTablesRekening() {
+            if (appState.instances.dataTableRek) {
+                appState.instances.dataTableRek.clear().rows.add(appState.database.rekening).draw();
+                return;
+            }
+
+            appState.instances.dataTableRek = $('#datatableRekening').DataTable({
+                data: appState.database.rekening,
+                columns: [
+                    { data: 'id' },
+                    { data: 'jenisBank', render: data => `<span class="badge bg-primary">${escapeHtml(data)}</span>` },
+                    { data: 'jenisRekening', render: escapeHtml },
+                    { data: 'namaRekening', render: escapeHtml },
+                    { data: 'nomorRekening', render: data => `<span class="font-monospace fw-bold">${escapeHtml(data)}</span>` },
+                    { data: 'sandiLogin', render: () => `••••••••` },
+                    { data: 'sandiTransaksi', render: () => `••••••••` },
+                    { data: 'status', render: data => data === 'Aktif' ? `<span class="badge bg-success">Aktif</span>` : `<span class="badge bg-danger">Nonaktif</span>` },
+                    {
+                        data: null,
+                        orderable: false,
+                        render: (data, type, row) => {
+                            return `
+                                <div class="btn-group dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Aksi</button>
+                                    <ul class="dropdown-menu shadow">
+                                        <li><a class="dropdown-item option-detail-rek" href="#" data-id="${row.id}"><i class="bi bi-eye text-info"></i> Detail Lengkap</a></li>
+                                        <li><a class="dropdown-item option-edit-rek" href="#" data-id="${row.id}"><i class="bi bi-pencil text-warning"></i> Edit Data</a></li>
+                                        <li><a class="dropdown-item option-copy-num" href="#" data-clip="${escapeHtml(row.nomorRekening)}"><i class="bi bi-clipboard"></i> Copy No. Rekening</a></li>
+                                        <li><a class="dropdown-item option-copy-login" href="#" data-clip="${escapeHtml(row.sandiLogin)}"><i class="bi bi-shield-lock"></i> Copy Sandi Login</a></li>
+                                        <li><a class="dropdown-item option-copy-trx" href="#" data-clip="${escapeHtml(row.sandiTransaksi)}"><i class="bi bi-wallet"></i> Copy Sandi Trx</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger option-hapus-rek" href="#" data-id="${row.id}"><i class="bi bi-trash"></i> Hapus Permanen</a></li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                    }
+                ],
+                language: { search: "Cari Rekening:", lengthMenu: "_MENU_ baris per halaman", info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ rekening", paginate: { next: "→", previous: "←" } },
+                pageLength: 10,
+                dom: 'lrtip' // Menghapus kustomisasi tombol bawaan DataTables agar integrasi tombol kustom berjalan lancar
+            });
+        }
+
+        function populateEmailTable() {
+            const tbody = document.getElementById('tbodyEmail');
+            tbody.innerHTML = "";
+            if (appState.database.email.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='4' class='text-center text-muted'>Tidak ada data email internal.</td></tr>";
+                return;
+            }
+            appState.database.email.forEach(row => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b class="text-primary">${escapeHtml(row.userIdEmail)}</b></td>
+                        <td><span class="font-monospace">••••••••</span> 
+                            <button class="btn btn-xs py-0 px-1 btn-outline-secondary btn-copy-raw" data-clip="${escapeHtml(row.passwordEmail)}"><i class="bi bi-copy"></i></button>
+                        </td>
+                        <td><span class="text-muted small">${escapeHtml(row.emailBackup)}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning btn-edit-email" data-user="${escapeHtml(row.userIdEmail)}"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger btn-hapus-email" data-user="${escapeHtml(row.userIdEmail)}"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function populateRiwayatTable() {
+            const tbody = document.querySelector('#tableFullRiwayat tbody');
+            tbody.innerHTML = "";
+            
+            // Urutkan riwayat berdasarkan waktu paling baru
+            const sortedRiwayat = [...appState.database.riwayat].reverse();
+            if (sortedRiwayat.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='5' class='text-center text-muted'>Riwayat kosong.</td></tr>";
+                return;
+            }
+
+            sortedRiwayat.forEach(row => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><small class="font-monospace">${formatTanggal(row.timestamp)}</small></td>
+                        <td><span class="badge bg-secondary">${escapeHtml(row.admin)}</span></td>
+                        <td><small>${escapeHtml(row.perangkat)}</small></td>
+                        <td><small class="text-muted">${escapeHtml(row.ip)}</small></td>
+                        <td><span class="fw-medium">${escapeHtml(row.aksi)}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- NAVIGATION WORKFLOW SYSTEM ---
+        function navigateToSection(sectionId, customTitle = null) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active-section'));
+            document.querySelectorAll('.nav-link-item').forEach(link => link.classList.remove('active'));
+            
+            const targetSec = document.getElementById(sectionId);
+            if(targetSec) targetSec.classList.add('active-section');
+
+            const correspondingLink = document.querySelector(`.nav-link-item[data-target="${sectionId}"]`);
+            if (correspondingLink) correspondingLink.classList.add('active');
+
+            // Ganti Title Teks Atas Navbar
+            let titleText = customTitle || (correspondingLink ? correspondingLink.innerText.trim() : "Manajemen System");
+            document.querySelector('.page-title-text').innerText = titleText;
+            
+            // Jika masuk ke menu mobile, tutup paksa panel setelah klik navigasi
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        }
+
+        // --- SISTEM PENGATUR LISTENER & INTERAKSI EVENT UI ---
+        function setupInteractivityListeners() {
+            // Toggle Sidebar Desk & Mob
+            document.getElementById('sidebarCollapse').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+            document.getElementById('sidebarCollapseMobile').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('active');
+            });
+
+            // Navigasi Menu Sidebar
+            document.querySelectorAll('.nav-link-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = item.getAttribute('data-target');
+                    if(target === 'sec-tambah-rekening') {
+                        prepareFormRekening('add');
+                    }
+                    navigateToSection(target);
+                });
+            });
+
+            // Theme Switcher Bindings
+            document.querySelectorAll('.theme-toggle').forEach(toggle => {
+                toggle.addEventListener('change', (e) => {
+                    switchTheme(e.target.checked);
+                });
+            });
+
+            // Global Manual Refresh Button
+            document.querySelectorAll('.btn-refresh-data').forEach(b => {
+                b.addEventListener('click', async () => {
+                    showLoadingScreen("Menyelaraskan data server...");
+                    await synchronizeCoreDatabase();
+                    hideLoadingScreen();
+                    showToast("Sinkronisasi Sukses", "Seluruh data eksternal berhasil ditarik.", "success");
+                });
+            });
+
+            // Copy ke Clipboard Utilities generic handler
+            document.addEventListener('click', (e) => {
+                const targetCopy = e.target.closest('[data-clip]');
+                if (targetCopy) {
+                    e.preventDefault();
+                    const txt = targetCopy.getAttribute('data-clip');
+                    navigator.clipboard.writeText(txt).then(() => {
+                        showToast("Clipboard", "Teks berhasil disalin ke clipboard secara aman.", "success");
+                    });
+                }
+            });
+
+            // --- SUBMISSION HANDLER FORM LOGIN ---
+            document.getElementById('togglePassword').addEventListener('click', () => {
+                const inp = document.getElementById('loginPassword');
+                const icn = document.getElementById('togglePassword').querySelector('i');
+                if(inp.type === 'password') {
+                    inp.type = 'text';
+                    icn.className = "bi bi-eye-slash";
+                } else {
+                    inp.type = 'password';
+                    icn.className = "bi bi-eye";
+                }
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+                const btnSubmit = document.getElementById('btnLoginSubmit');
+                btnSubmit.disabled = true;
+                btnSubmit.querySelector('.spinner-border').classList.remove('d-none');
+
+                const usernameInput = document.getElementById('loginUser').value.trim();
+                const passwordInput = document.getElementById('loginPassword').value.trim();
+                const rememberMe = document.getElementById('rememberMe').checked;
+
+                // Mendeteksi data sidik perangkat klien secara mandiri tanpa pihak ketiga
+                const deviceInfo = `Browser: ${navigator.userAgent.split(' ')[0]} | OS: ${navigator.platform}`;
+
+                try {
+                    const response = await hitAPI('login', { 
+                        userId: usernameInput, 
+                        password: passwordInput,
+                        device: deviceInfo
+                    });
+
+                    if (response && response.status === 'success') {
+                        const sessionObject = {
+                            token: response.token,
+                            user: usernameInput,
+                            timestamp: Date.now()
+                        };
+                        localStorage.setItem('ptjbs_session', JSON.stringify(sessionObject));
+                        localStorage.setItem('ptjbs_remember', rememberMe ? 'true' : 'false');
+                        
+                        appState.sessionToken = response.token;
+                        appState.adminUser = usernameInput;
+                        document.getElementById('currentAdminName').innerText = appState.adminUser;
+                        
+                        form.reset();
+                        form.classList.remove('was-validated');
+                        
+                        showToast("Akses Diterima", `Selamat datang kembali, ${usernameInput}`, "success");
+                        document.getElementById('login-wrapper').classList.add('d-none');
+                        document.getElementById('main-wrapper').classList.remove('d-none');
+                        
+                        startSessionWatchdog();
+                        showLoadingScreen("Mempersiapkan Dashboard Terintegrasi...");
+                        await synchronizeCoreDatabase();
+                        hideLoadingScreen();
+                        navigateToSection('sec-dashboard');
+                    } else {
+                        throw new Error(response.message || "Kredensial salah.");
+                    }
+                } catch (err) {
+                    Swal.fire("Autentikasi Gagal", err.message || "Gagal terhubung dengan Server Apps Script.", "error");
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.querySelector('.spinner-border').classList.add('d-none');
+                }
+            });
+
+            document.getElementById('btnLogout').addEventListener('click', (e) => {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Konfirmasi Keluar',
+                    text: "Apakah Anda yakin ingin menghancurkan token session aktif saat ini?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Keluar',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        executeLogoutAction(false);
+                    }
+                });
+            });
+
+            // --- REKENING ACTIONS BINDING (DATA TABLES INTERACTION) ---
+            $('#datatableRekening').on('click', '.option-detail-rek', function(e){
+                e.preventDefault();
+                const id = $(this).data('id');
+                const r = appState.database.rekening.find(item => item.id == id);
+                if(r) {
+                    Swal.fire({
+                        title: `<strong>Detail Rekening #${r.id}</strong>`,
+                        html: `
+                            <div class="text-start fs-6 p-2" style="max-height:400px; overflow-y:auto;">
+                                <table class="table table-sm table-bordered">
+                                    <tr><th>Bank / Jenis</th><td>${escapeHtml(r.jenisBank)} (${escapeHtml(r.jenisRekening)})</td></tr>
+                                    <tr><th>Nama Bank Resmi</th><td>${escapeHtml(r.namaBank)}</td></tr>
+                                    <tr><th>Atas Nama</th><td>${escapeHtml(r.namaRekening)}</td></tr>
+                                    <tr><th>No Rekening</th><td><code>${escapeHtml(r.nomorRekening)}</code></td></tr>
+                                    <tr><th>Sandi Login</th><td><code>${escapeHtml(r.sandiLogin)}</code></td></tr>
+                                    <tr><th>Sandi Transaksi</th><td><code>${escapeHtml(r.sandiTransaksi)}</code></td></tr>
+                                    <tr><th>Email Terdaftar</th><td>${escapeHtml(r.emailTerdaftar)}</td></tr>
+                                    <tr><th>Tanggal Aktif</th><td>${formatTanggal(r.tanggalAktif)}</td></tr>
+                                    <tr><th>Status Validasi</th><td><span class="badge ${r.status==='Aktif'?'bg-success':'bg-danger'}">${r.status}</span></td></tr>
+                                    <tr><th>Last Update</th><td><small>${formatTanggal(r.lastUpdate)}</small></td></tr>
+                                </table>
+                            </div>
+                        `,
+                        confirmButtonText: 'Tutup'
+                    });
+                }
+            });
+
+            $('#datatableRekening').on('click', '.option-edit-rek', function(e){
+                e.preventDefault();
+                const id = $(this).data('id');
+                prepareFormRekening('edit', id);
+            });
+
+            $('#datatableRekening').on('click', '.option-hapus-rek', function(e){
+                e.preventDefault();
+                const id = $(this).data('id');
+                Swal.fire({
+                    title: 'Hapus Rekening?',
+                    text: `Apakah Anda benar-benar yakin menghapus data rekening ID ${id}? Tindakan ini permanen di server cloud!`,
+                    icon: 'danger',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Ya, Hapus Permanen',
+                    cancelButtonText: 'Batal'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        showLoadingScreen("Menghapus data rekening...");
+                        try {
+                            const res = await hitAPI('deleteRekening', { id: id });
+                            if (res && res.status === 'success') {
+                                showToast("Terhapus", `Rekening ID ${id} berhasil dimusnahkan.`, "success");
+                                await synchronizeCoreDatabase();
+                            }
+                        } catch (err) { Swal.fire("Gagal", err.message, "error"); }
+                        finally { hideLoadingScreen(); }
+                    }
+                });
+            });
+
+            // Custom Export Trigger DataTables Linkages
+            document.getElementById('btnExportExcelRek').addEventListener('click', () => {
+                // Manfaatkan fungsi built-in dummy manual converter ke CSV/Excel ringan tanpa library berat tambahan
+                let csv = 'ID,Jenis Bank,Jenis Rekening,Nama Bank,Nama Rekening,Nomor Rekening,Status,Tanggal Aktif\n';
+                appState.database.rekening.forEach(r => {
+                    csv += `"${r.id}","${r.jenisBank}","${r.jenisRekening}","${r.namaBank}","${r.namaRekening}","${r.nomorRekening}","${r.status}","${r.tanggalAktif}"\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute("download", `Data_Rekening_PTJBS_NEV_${Date.now()}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            document.getElementById('btnExportPdfRek').addEventListener('click', () => {
+                window.print(); // Solusi responsive native engine PDF print layout modern bootstrap
+            });
+
+            // Form Submit Rekening (Add / Edit)
+            document.getElementById('formRekeningData').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+                showLoadingScreen("Sedang memproses data rekening ke cloud...");
+                const isEdit = document.getElementById('rekId').value !== "";
+                const payload = {
+                    id: isEdit ? parseInt(document.getElementById('rekId').value) : null,
+                    jenisBank: document.getElementById('rekJenisBank').value,
+                    jenisRekening: document.getElementById('rekJenisRekening').value,
+                    namaBank: document.getElementById('rekNamaBank').value,
+                    namaRekening: document.getElementById('rekNamaRekening').value,
+                    nomorRekening: document.getElementById('rekNomorRekening').value,
+                    emailTerdaftar: document.getElementById('rekEmailTerdaftar').value,
+                    sandiLogin: document.getElementById('rekSandiLogin').value,
+                    sandiTransaksi: document.getElementById('rekSandiTransaksi').value,
+                    tanggalAktif: document.getElementById('rekTanggalAktif').value,
+                    status: document.getElementById('rekStatus').value
+                };
+
+                try {
+                    const action = isEdit ? 'updateRekening' : 'addRekening';
+                    const res = await hitAPI(action, payload);
+                    if(res && res.status === 'success') {
+                        showToast("Berhasil", "Data Transaksi Rekening Tersimpan.", "success");
+                        form.reset();
+                        form.classList.remove('was-validated');
+                        await synchronizeCoreDatabase();
+                        navigateToSection('sec-data-rekening');
+                    }
+                } catch(err) { Swal.fire("Gagal Menyimpan", err.message, "error"); }
+                finally { hideLoadingScreen(); }
+            });
+
+            document.querySelector('.btn-cancel-rek').addEventListener('click', () => {
+                document.getElementById('formRekeningData').reset();
+                navigateToSection('sec-data-rekening');
+            });
+
+            // --- EMAIL ACTIONS EVENT BINDING ---
+            document.getElementById('btnBukaModalTambahEmail').addEventListener('click', () => {
+                document.getElementById('formEmailData').reset();
+                document.getElementById('emailMode').value = "add";
+                document.getElementById('emailUser').disabled = false;
+                document.getElementById('modalEmailTitle').innerText = "Tambah Kredensial Email Baru";
+                new bootstrap.Modal(document.getElementById('modalEmail')).show();
+            });
+
+            document.getElementById('tbodyEmail').addEventListener('click', function(e) {
+                const targetEdit = e.target.closest('.btn-edit-email');
+                const targetHapus = e.target.closest('.btn-hapus-email');
+
+                if(targetEdit) {
+                    const userId = targetEdit.getAttribute('data-user');
+                    const em = appState.database.email.find(item => item.userIdEmail === userId);
+                    if(em) {
+                        document.getElementById('emailMode').value = "edit";
+                        document.getElementById('emailOldUser').value = em.userIdEmail;
+                        document.getElementById('emailUser').value = em.userIdEmail;
+                        document.getElementById('emailUser').disabled = true; // Email Utama Konstan sebagai Key Induk
+                        document.getElementById('emailPassword').value = em.passwordEmail;
+                        document.getElementById('emailBackup').value = em.emailBackup;
+                        document.getElementById('modalEmailTitle').innerText = "Modifikasi Data Kredensial Email";
+                        new bootstrap.Modal(document.getElementById('modalEmail')).show();
+                    }
+                }
+
+                if(targetHapus) {
+                    const userId = targetHapus.getAttribute('data-user');
+                    Swal.fire({
+                        title: 'Hapus Log Email?',
+                        text: `Hapus kredensial email ${userId}?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Hapus'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            showLoadingScreen("Menghapus data email...");
+                            try {
+                                const res = await hitAPI('deleteEmail', { userIdEmail: userId });
+                                if (res && res.status === 'success') {
+                                    showToast("Sukses", "Data Email dibersihkan.", "success");
+                                    await synchronizeCoreDatabase();
+                                }
+                            } catch(err) { Swal.fire("Gagal", err.message, "error"); }
+                            finally { hideLoadingScreen(); }
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('formEmailData').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                if(!form.checkValidity()) { form.classList.add('was-validated'); return; }
+
+                const mode = document.getElementById('emailMode').value;
+                const payload = {
+                    userIdEmail: document.getElementById('emailUser').value.trim(),
+                    passwordEmail: document.getElementById('emailPassword').value.trim(),
+                    emailBackup: document.getElementById('emailBackup').value.trim()
+                };
+
+                bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();
+                showLoadingScreen("Mengirim data email ke server...");
+
+                try {
+                    const action = (mode === 'edit') ? 'updateEmail' : 'addEmail';
+                    const res = await hitAPI(action, payload);
+                    if (res && res.status === 'success') {
+                        showToast("Berhasil", "Data Email Diperbarui.", "success");
+                        await synchronizeCoreDatabase();
+                    }
+                } catch(err) { Swal.fire("Gagal Proses", err.message, "error"); }
+                finally { hideLoadingScreen(); }
+            });
+
+            // --- RIWAYAT SEARCH ENGINE INLINE ---
+            document.getElementById('searchRiwayat').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#tableFullRiwayat tbody tr');
+                rows.forEach(row => {
+                    row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
+                });
+            });
+
+            // --- SETTING ACTIONS (CHANGE PASSWORD, REGISTER ADMIN, BACKUP RESTORE) ---
+            document.getElementById('formGantiPassword').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const pLama = document.getElementById('passLama').value;
+                const pBaru = document.getElementById('passBaru').value;
+                if(!pLama || !pBaru) return;
+
+                showLoadingScreen("Memproses update sandi...");
+                try {
+                    const res = await hitAPI('changeAdminPassword', { 
+                        userId: appState.adminUser, 
+                        passwordLama: pLama, 
+                        passwordBaru: pBaru 
+                    });
+                    if(res && res.status === 'success') {
+                        Swal.fire("Sandi Diganti", "Password Anda berhasil diperbarui.", "success");
+                        e.target.reset();
+                    }
+                } catch (err) { Swal.fire("Gagal Ganti Password", err.message, "error"); }
+                finally { hideLoadingScreen(); }
+            });
+
+            document.getElementById('formTambahAdmin').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const u = document.getElementById('adminNewUser').value.trim();
+                const p = document.getElementById('adminNewPass').value.trim();
+                if(!u || !p) return;
+
+                showLoadingScreen("Mendaftarkan admin baru...");
+                try {
+                    const res = await hitAPI('addAdmin', { userId: u, password: p });
+                    if(res && res.status === 'success') {
+                        Swal.fire("Registrasi Berhasil", `Operator Baru ${u} siap ditugaskan.`, "success");
+                        e.target.reset();
+                        await synchronizeCoreDatabase();
+                    }
+                } catch (err) { Swal.fire("Gagal Registrasi", err.message, "error"); }
+                finally { hideLoadingScreen(); }
+            });
+
+            document.getElementById('btnBackupDb').addEventListener('click', () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState.database, null, 2));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href",     dataStr     );
+                dlAnchorElem.setAttribute("download", `PTJBS_NEV_BACKUP_DB_${Date.now()}.json`);
+                dlAnchorElem.click();
+                showToast("Backup", "Database terunduh ke sistem lokal dalam format JSON.", "success");
+            });
+
+            document.getElementById('btnRestoreDbTrigger').addEventListener('click', () => {
+                document.getElementById('fileRestoreDb').click();
+            });
+
+            document.getElementById('fileRestoreDb').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function(evt) {
+                    try {
+                        const parsedData = JSON.parse(evt.target.result);
+                        if (!parsedData.rekening || !parsedData.email) {
+                            throw new Error("Struktur skema file JSON cadangan tidak valid.");
+                        }
+
+                        Swal.fire({
+                            title: 'Konfirmasi Overwrite',
+                            text: "Apakah Anda yakin ingin menimpa (Restore) seluruh database cloud saat ini dengan isi file cadangan ini?",
+                            icon: 'danger',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Timpa Server'
+                        }).then(async (result) => {
+                            if(result.isConfirmed) {
+                                showLoadingScreen("Melakukan Restorasi Massal Server Cloud...");
+                                try {
+                                    const res = await hitAPI('restoreDatabaseBulk', parsedData);
+                                    if(res && res.status === 'success') {
+                                        Swal.fire("Restorasi Selesai", "Seluruh database cloud berhasil digantikan dengan data backup.", "success");
+                                        await synchronizeCoreDatabase();
+                                    }
+                                } catch(err) { Swal.fire("Gagal Restorasi", err.message, "error"); }
+                                finally { hideLoadingScreen(); }
+                            }
+                        });
+                    } catch(ex) {
+                        Swal.fire("File Rusak", "Format JSON salah atau tidak sesuai spesifikasi sistem: " + ex.message, "error");
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        // --- PREPARATION DRIVER UNTUK FORM TAMBAH/EDIT REKENING ---
+        function prepareFormRekening(mode, id = null) {
+            const form = document.getElementById('formRekeningData');
+            form.reset();
+            form.classList.remove('was-validated');
+
+            if (mode === 'add') {
+                document.getElementById('rekId').value = "";
+                document.getElementById('formRekeningTitle').innerHTML = `<i class="bi bi-plus-circle-fill text-primary"></i> Formulir Registrasi Akun Rekening Baru`;
+                document.getElementById('btnSubmitRekening').innerText = "Daftarkan Rekening";
+            } else if (mode === 'edit' && id !== null) {
+                const r = appState.database.rekening.find(item => item.id == id);
+                if (r) {
+                    document.getElementById('rekId').value = r.id;
+                    document.getElementById('rekJenisBank').value = r.jenisBank;
+                    document.getElementById('rekJenisRekening').value = r.jenisRekening;
+                    document.getElementById('rekNamaBank').value = r.namaBank;
+                    document.getElementById('rekNamaRekening').value = r.namaRekening;
+                    document.getElementById('rekNomorRekening').value = r.nomorRekening;
+                    document.getElementById('rekEmailTerdaftar').value = r.emailTerdaftar;
+                    document.getElementById('rekSandiLogin').value = r.sandiLogin;
+                    document.getElementById('rekSandiTransaksi').value = r.sandiTransaksi;
+                    
+                    // Format tanggal agar sesuai input HTML Date (YYYY-MM-DD)
+                    if(r.tanggalActive) {
+                        const dateObj = new Date(r.tanggalAktif);
+                        if(!isNaN(dateObj.getTime())) {
+                            document.getElementById('rekTanggalAktif').value = dateObj.toISOString().split('T')[0];
+                        }
+                    }
+                    
+                    document.getElementById('rekStatus').value = r.status;
+                    
+                    document.getElementById('formRekeningTitle').innerHTML = `<i class="bi bi-pencil-square text-warning"></i> Modifikasi Data Rekening ID #${r.id}`;
+                    document.getElementById('btnSubmitRekening').innerText = "Simpan Perubahan";
+                    navigateToSection('sec-tambah-rekening', "Edit Rekening");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
