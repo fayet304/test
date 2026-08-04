@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Dashboard Presensi & Izin Keluar Kantor</title>
+    <title>Panel Dashboard Presensi & DirectPass Kiosk</title>
     <!-- Google Fonts & FontAwesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +31,8 @@
             --warning-glow: rgba(251, 191, 36, 0.15);
             --danger: #f87171;
             --danger-glow: rgba(248, 113, 113, 0.15);
+            --purple: #a855f7;
+            --purple-glow: rgba(168, 85, 247, 0.15);
         }
 
         * {
@@ -105,6 +107,8 @@
             position: sticky;
             top: 0;
             z-index: 9;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .brand-area {
@@ -142,24 +146,26 @@
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .clock-widget {
             text-align: right;
             border-right: 1px solid var(--border-color);
-            padding-right: 20px;
+            padding-right: 16px;
+            margin-right: 4px;
         }
 
         .clock-time {
             font-family: 'Poppins', sans-serif;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--text-title);
         }
 
         .clock-date {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
         }
 
@@ -167,9 +173,9 @@
             background-color: var(--bg-subCard);
             color: var(--text-title);
             border: 1px solid var(--border-color);
-            padding: 10px 18px;
+            padding: 10px 16px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             display: inline-flex;
@@ -195,6 +201,18 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
+        .btn-success {
+            background-color: var(--success);
+            color: #030712;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-success:hover {
+            background-color: #10b981;
+            box-shadow: 0 0 15px var(--success-glow);
+        }
+
         /* Main Container */
         main {
             padding: 24px 28px;
@@ -210,7 +228,7 @@
         /* Metric Cards Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
         }
 
@@ -238,10 +256,10 @@
         .stat-card.blue::after { background-color: var(--primary); }
         .stat-card.green::after { background-color: var(--success); }
         .stat-card.amber::after { background-color: var(--warning); }
-        .stat-card.red::after { background-color: var(--danger); }
+        .stat-card.purple::after { background-color: var(--purple); }
 
         .stat-info h4 {
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
@@ -250,7 +268,7 @@
 
         .stat-number {
             font-family: 'Poppins', sans-serif;
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
             color: var(--text-title);
             line-height: 1;
@@ -258,24 +276,24 @@
         }
 
         .stat-desc {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-body);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
         }
 
         .blue .stat-icon { background: var(--primary-glow); color: var(--primary); }
         .green .stat-icon { background: var(--success-glow); color: var(--success); }
         .amber .stat-icon { background: var(--warning-glow); color: var(--warning); }
-        .red .stat-icon { background: var(--danger-glow); color: var(--danger); }
+        .purple .stat-icon { background: var(--purple-glow); color: var(--purple); }
 
         /* Panel Main Content Area */
         .content-section {
@@ -300,18 +318,19 @@
 
         .tabs {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             background-color: var(--bg-subCard);
             padding: 4px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
+            flex-wrap: wrap;
         }
 
         .tab-btn {
             background: none;
             border: none;
             color: var(--text-body);
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
@@ -448,6 +467,25 @@
             border: 1px solid rgba(251, 191, 36, 0.3);
         }
 
+        .badge-red {
+            background: var(--danger-glow);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        .badge-purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .badge-gray {
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
         .badge-dot {
             width: 6px;
             height: 6px;
@@ -456,6 +494,15 @@
 
         .badge-green .badge-dot { background-color: var(--success); }
         .badge-amber .badge-dot { background-color: var(--warning); }
+        .badge-red .badge-dot { background-color: var(--danger); }
+        .badge-purple .badge-dot { background-color: var(--purple); }
+        .badge-gray .badge-dot { background-color: #94a3b8; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
 
         .btn-sm {
             padding: 6px 12px;
@@ -595,6 +642,39 @@
             color: var(--success);
             font-size: 18px;
         }
+
+        /* Quick Action Switch Radio */
+        .mode-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .mode-btn {
+            background-color: var(--bg-subCard);
+            border: 1px solid var(--border-color);
+            color: var(--text-body);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active-masuk {
+            background-color: var(--success-glow);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .mode-btn.active-pulang {
+            background-color: var(--purple-glow);
+            border-color: var(--purple);
+            color: var(--purple);
+        }
     </style>
 </head>
 <body>
@@ -603,7 +683,7 @@
     <div class="banner-ticker">
         <div class="banner-tag"><i class="fa-solid fa-bullhorn"></i> PENGUMUMAN</div>
         <div class="banner-content" id="bannerText">
-            [HRD ALERT] Seluruh Karyawan Wajib Mengisi Form Izin Keluar Kantor Kiosk Saat Meninggalkan Area Gedung untuk Keperluan Apapun. | Jadwal Maintenance Server Utama: Sabtu, 08 Agustus 2026 Pukul 22.00 WIB.
+            [HRD ALERT] Jam kerja utama: 08:00 - 17:00 WIB. Pastikan melakukan Scan ID saat Masuk & Pulang. | Seluruh Karyawan Wajib Mengisi Form Izin Keluar saat meninggalkan area kantor.
         </div>
     </div>
 
@@ -624,11 +704,17 @@
                 <div class="clock-time" id="liveClock">00:00:00 WIB</div>
                 <div class="clock-date" id="liveDate">Selasa, 4 Agustus 2026</div>
             </div>
-            <button class="btn" onclick="openModal('announcementModal')">
-                <i class="fa-solid fa-pen-to-square"></i> Edit Banner
+            
+            <button class="btn btn-success" onclick="openModal('attendanceModal')">
+                <i class="fa-solid fa-qrcode"></i> Kiosk Absensi Utama
             </button>
-            <button class="btn btn-primary" onclick="openModal('permissionModal')">
+            
+            <button class="btn btn-primary" onclick="openPermissionModal()">
                 <i class="fa-solid fa-person-walking-arrow-right"></i> Form Izin Keluar
+            </button>
+
+            <button class="btn" onclick="openModal('announcementModal')">
+                <i class="fa-solid fa-pen-to-square"></i> Banner
             </button>
         </div>
     </header>
@@ -670,14 +756,14 @@
                 </div>
             </div>
 
-            <div class="stat-card red">
+            <div class="stat-card purple">
                 <div class="stat-info">
-                    <h4>Izin Melewati Estimasi</h4>
-                    <div class="stat-number" id="statOverdue">1</div>
-                    <div class="stat-desc">Perlu konfirmasi HRD</div>
+                    <h4>Sudah Pulang Hari Ini</h4>
+                    <div class="stat-number" id="statHome">0</div>
+                    <div class="stat-desc">Checkout Hari Ini</div>
                 </div>
                 <div class="stat-icon">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <i class="fa-solid fa-house-user"></i>
                 </div>
             </div>
         </div>
@@ -686,9 +772,11 @@
         <div class="content-section">
             <div class="toolbar">
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="filterTab('all', this)">Semua (142)</button>
-                    <button class="tab-btn" onclick="filterTab('inside', this)">Di Dalam (125)</button>
-                    <button class="tab-btn" onclick="filterTab('outside', this)">Di Luar Kantor (17)</button>
+                    <button class="tab-btn active" onclick="filterTab('all', this)">Semua</button>
+                    <button class="tab-btn" onclick="filterTab('inside', this)">Di Dalam Kantor</button>
+                    <button class="tab-btn" onclick="filterTab('outside', this)">Di Luar Kantor</button>
+                    <button class="tab-btn" onclick="filterTab('home', this)">Sudah Pulang</button>
+                    <button class="tab-btn" onclick="filterTab('uncheck', this)">Belum Check-in</button>
                 </div>
 
                 <div class="search-area">
@@ -705,12 +793,11 @@
                         <tr>
                             <th>Karyawan</th>
                             <th>NIP</th>
-                            <th>Check-in Pagi</th>
-                            <th>Status Saat Ini</th>
-                            <th>Jam Keluar</th>
-                            <th>Estimasi Kembali</th>
-                            <th>Keperluan / Tujuan</th>
-                            <th>Aksi</th>
+                            <th>Masuk</th>
+                            <th>Pulang</th>
+                            <th>Status Kantor</th>
+                            <th>Durasi Keluar (Live Stopwatch)</th>
+                            <th>Aksi Cepat</th>
                         </tr>
                     </thead>
                     <tbody id="employeeTableBody">
@@ -721,7 +808,44 @@
         </div>
     </main>
 
-    <!-- Modal Form: Input Izin Keluar Kantor -->
+    <!-- Modal Form: Kiosk Presensi Masuk / Pulang -->
+    <div class="modal-overlay" id="attendanceModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-right-to-bracket" style="color: var(--success); margin-right: 8px;"></i> Presensi Masuk / Pulang (Kiosk)</h3>
+                <button class="close-btn" onclick="closeModal('attendanceModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="attendanceForm" onsubmit="handleAttendanceSubmit(event)">
+                <div class="mode-switch">
+                    <div class="mode-btn active-masuk" id="btnModeMasuk" onclick="setAttendanceMode('MASUK')">
+                        <i class="fa-solid fa-sun"></i> ABSEN MASUK
+                    </div>
+                    <div class="mode-btn" id="btnModePulang" onclick="setAttendanceMode('PULANG')">
+                        <i class="fa-solid fa-moon"></i> ABSEN PULANG
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih Karyawan atau Scan ID / NIP</label>
+                    <select class="form-control" id="attendEmpId" required>
+                        <option value="">-- Pilih Karyawan --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Waktu Presensi</label>
+                    <input type="text" class="form-control" id="attendLiveTime" readonly style="opacity:0.8;">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('attendanceModal')">Batal</button>
+                    <button type="submit" class="btn btn-success" id="btnSubmitAttend"><i class="fa-solid fa-check"></i> Proses Absen Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Form: Input Izin Keluar Kantor (OTOMATISASI DENGAN DURASI) -->
     <div class="modal-overlay" id="permissionModal">
         <div class="modal">
             <div class="modal-header">
@@ -742,19 +866,33 @@
                         <option value="Dinas Luar & Meeting Klien">Dinas Luar & Meeting Klien</option>
                         <option value="Operasional Lapangan / Logistik">Operasional Lapangan / Logistik</option>
                         <option value="Urusan Pribadi Singkat">Urusan Pribadi Singkat</option>
-                        <option value="Istirahat Medis / Klinik">Istirahat Medis / Klinik</option>
+                        <option value="Istirahat / Medis">Istirahat / Medis</option>
+                        <option value="Izin Merokok / Toilet">Izin Merokok / Toilet</option>
                     </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Jam Keluar</label>
-                        <input type="time" class="form-control" id="formTimeOut" required>
+                        <label>Jam Keluar (Otomatis)</label>
+                        <input type="text" class="form-control" id="formTimeOutDisplay" readonly style="opacity: 0.8; font-weight:600; color: var(--primary);">
+                        <input type="hidden" id="formTimeOutISO">
                     </div>
                     <div class="form-group">
-                        <label>Est. Jam Kembali</label>
-                        <input type="time" class="form-control" id="formTimeReturn" required>
+                        <label>Pilih Alokasi Durasi</label>
+                        <select class="form-control" id="formDurationSelect" onchange="calculateEstimatedReturn()" required>
+                            <option value="15">15 Menit (Singkat/Toilet)</option>
+                            <option value="30">30 Menit (Merokok/Makan)</option>
+                            <option value="60" selected>1 Jam (Meeting/Dinas)</option>
+                            <option value="120">2 Jam (Dinas Luar)</option>
+                            <option value="240">4 Jam (Setengah Hari)</option>
+                        </select>
                     </div>
+                </div>
+
+                <!-- Preview Estimasi Jam Kembali -->
+                <div class="form-group" style="background: rgba(56, 189, 248, 0.1); padding: 12px 14px; border-radius: 8px; border: 1px dashed var(--primary);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 2px;">Estimasi Otomatis Jam Kembali:</div>
+                    <div id="estReturnDisplay" style="font-size: 15px; font-weight: 700; color: #fff;">-</div>
                 </div>
 
                 <div class="form-group">
@@ -800,25 +938,48 @@
     <script>
         // Initial Mock Employees Data
         let employees = [
-            { id: 'EMP-001', name: 'Budi Santoso', dept: 'IT Support', status: 'outside', checkIn: '07:55', timeOut: '09:15', timeReturn: '11:30', reason: 'Maintenance Server Cabang' },
-            { id: 'EMP-002', name: 'Siti Rahmawati', dept: 'Marketing', status: 'outside', checkIn: '08:05', timeOut: '10:00', timeReturn: '14:00', reason: 'Meeting Klien Eksternal' },
-            { id: 'EMP-003', name: 'Andi Wijaya', dept: 'Operational', status: 'inside', checkIn: '08:00', timeOut: '-', timeReturn: '-', reason: '-' },
-            { id: 'EMP-004', name: 'Dewi Lestari', dept: 'HRD & Legal', status: 'outside', checkIn: '08:12', timeOut: '10:30', timeReturn: '11:45', reason: 'Urusan Bank & Dokumen' },
-            { id: 'EMP-005', name: 'Rahmat Hidayat', dept: 'Finance', status: 'inside', checkIn: '07:48', timeOut: '-', timeReturn: '-', reason: '-' },
-            { id: 'EMP-006', name: 'Eka Prasetya', dept: 'Software Dev', status: 'inside', checkIn: '08:10', timeOut: '-', timeReturn: '-', reason: '-' },
-            { id: 'EMP-007', name: 'Lia Fitriani', dept: 'General Affair', status: 'outside', checkIn: '08:02', timeOut: '09:00', timeReturn: '10:15', reason: 'Pembelian Logistik Kantor' },
-            { id: 'EMP-008', name: 'Rian Kurniawan', dept: 'QA Engineer', status: 'inside', checkIn: '08:15', timeOut: '-', timeReturn: '-', reason: '-' }
+            { 
+                id: 'EMP-001', 
+                name: 'Budi Santoso', 
+                dept: 'IT Support', 
+                status: 'outside', 
+                checkIn: '07:55', 
+                checkOut: '-', 
+                startTimeISO: new Date(Date.now() - 25 * 60000).toISOString(), 
+                allocatedMinutes: 30, 
+                reason: 'Maintenance Server (Gedung B)' 
+            },
+            { 
+                id: 'EMP-002', 
+                name: 'Siti Rahmawati', 
+                dept: 'Marketing', 
+                status: 'outside', 
+                checkIn: '08:05', 
+                checkOut: '-', 
+                startTimeISO: new Date(Date.now() - 80 * 60000).toISOString(), 
+                allocatedMinutes: 60, 
+                reason: 'Meeting Klien (Plaza Senayan)' 
+            },
+            { id: 'EMP-003', name: 'Andi Wijaya', dept: 'Operational', status: 'inside', checkIn: '08:00', checkOut: '-', startTimeISO: null, allocatedMinutes: 0, reason: '-' },
+            { id: 'EMP-004', name: 'Dewi Lestari', dept: 'HRD & Legal', status: 'home', checkIn: '07:45', checkOut: '17:05', startTimeISO: null, allocatedMinutes: 0, reason: '-' },
+            { id: 'EMP-005', name: 'Rahmat Hidayat', dept: 'Finance', status: 'inside', checkIn: '07:48', checkOut: '-', startTimeISO: null, allocatedMinutes: 0, reason: '-' },
+            { id: 'EMP-006', name: 'Eka Prasetya', dept: 'Software Dev', status: 'inside', checkIn: '08:10', checkOut: '-', startTimeISO: null, allocatedMinutes: 0, reason: '-' },
+            { id: 'EMP-007', name: 'Lia Fitriani', dept: 'General Affair', status: 'uncheck', checkIn: '-', checkOut: '-', startTimeISO: null, allocatedMinutes: 0, reason: '-' },
+            { id: 'EMP-008', name: 'Rian Kurniawan', dept: 'QA Engineer', status: 'inside', checkIn: '08:15', checkOut: '-', startTimeISO: null, allocatedMinutes: 0, reason: '-' }
         ];
 
         let currentFilter = 'all';
+        let selectedAttendMode = 'MASUK';
 
         // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
             initClock();
             renderStats();
             renderTable();
-            populateSelectEmployee();
-            setCurrentTimes();
+            populateSelects();
+            
+            // Start Real-Time Live Timer loop for StopWatch
+            setInterval(updateOutsideTimers, 1000);
         });
 
         // Real-Time Clock
@@ -830,32 +991,46 @@
                 
                 document.getElementById('liveClock').innerText = timeStr;
                 document.getElementById('liveDate').innerText = dateStr;
+                document.getElementById('attendLiveTime').value = timeStr + ' - ' + dateStr;
             }
             update();
             setInterval(update, 1000);
         }
 
-        // Set default current time in modal
-        function setCurrentTimes() {
+        // Open Permission Modal with Automatically Populated Times
+        function openPermissionModal() {
             const now = new Date();
-            const timeOutStr = now.toTimeString().substring(0, 5);
+            document.getElementById('formTimeOutISO').value = now.toISOString();
+            document.getElementById('formTimeOutDisplay').value = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
             
-            const returnTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Default +2 hours
-            const timeReturnStr = returnTime.toTimeString().substring(0, 5);
-            
-            document.getElementById('formTimeOut').value = timeOutStr;
-            document.getElementById('formTimeReturn').value = timeReturnStr;
+            calculateEstimatedReturn();
+            openModal('permissionModal');
         }
 
-        // Calculate and Render Metrics
+        // Calculate Automatic Estimated Return Time
+        function calculateEstimatedReturn() {
+            const isoStart = document.getElementById('formTimeOutISO').value;
+            if(!isoStart) return;
+
+            const startTime = new Date(isoStart);
+            const durationMinutes = parseInt(document.getElementById('formDurationSelect').value);
+            const returnTime = new Date(startTime.getTime() + durationMinutes * 60000);
+            
+            document.getElementById('estReturnDisplay').innerText = 
+                returnTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ` WIB (Target Batas: ${durationMinutes} Menit)`;
+        }
+
+        // Render Statistics
         function renderStats() {
-            const total = employees.length + 134; // Simulating total base 142
+            const total = employees.length + 134; // Simulating Total
+            const insideCount = employees.filter(e => e.status === 'inside').length + 118;
             const outsideCount = employees.filter(e => e.status === 'outside').length + 13;
-            const insideCount = total - outsideCount;
+            const homeCount = employees.filter(e => e.status === 'home').length + 1;
 
             document.getElementById('statTotal').innerText = total;
             document.getElementById('statInside').innerText = insideCount;
             document.getElementById('statOutside').innerText = outsideCount;
+            document.getElementById('statHome').innerText = homeCount;
 
             const pctIn = Math.round((insideCount / total) * 100);
             const pctOut = Math.round((outsideCount / total) * 100);
@@ -864,7 +1039,7 @@
             document.getElementById('pctOutside').innerText = pctOut;
         }
 
-        // Filter Handlers
+        // Filter Tabs
         function filterTab(type, btnElement) {
             currentFilter = type;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -890,7 +1065,7 @@
             if (filtered.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
                             <i class="fa-solid fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
                             Tidak ada data karyawan yang cocok.
                         </td>
@@ -903,6 +1078,26 @@
                 const tr = document.createElement('tr');
                 const initials = emp.name.split(' ').map(n => n[0]).join('').substring(0, 2);
                 
+                let statusBadge = '';
+                if(emp.status === 'inside') {
+                    statusBadge = `<span class="badge badge-green"><span class="badge-dot"></span> Di Dalam Kantor</span>`;
+                } else if(emp.status === 'outside') {
+                    statusBadge = `<span class="badge badge-amber"><span class="badge-dot"></span> Izin Keluar</span>`;
+                } else if(emp.status === 'home') {
+                    statusBadge = `<span class="badge badge-purple"><span class="badge-dot"></span> Sudah Pulang</span>`;
+                } else {
+                    statusBadge = `<span class="badge badge-gray"><span class="badge-dot"></span> Belum Check-in</span>`;
+                }
+
+                // Render Live Timer Column
+                let timerCell = '-';
+                if (emp.status === 'outside' && emp.startTimeISO) {
+                    timerCell = `<div id="timer-${emp.id}" class="timer-container">Menghitung...</div>
+                                 <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${emp.reason}</div>`;
+                } else if (emp.reason !== '-') {
+                    timerCell = `<span style="font-size:12px;">${emp.reason}</span>`;
+                }
+
                 tr.innerHTML = `
                     <td>
                         <div class="emp-profile">
@@ -914,83 +1109,184 @@
                         </div>
                     </td>
                     <td><code>${emp.id}</code></td>
-                    <td>${emp.checkIn} WIB</td>
-                    <td>
-                        ${emp.status === 'inside' ? 
-                            `<span class="badge badge-green"><span class="badge-dot"></span> Di Dalam Kantor</span>` : 
-                            `<span class="badge badge-amber"><span class="badge-dot"></span> Di Luar Kantor</span>`
-                        }
-                    </td>
-                    <td>${emp.timeOut}</td>
-                    <td>${emp.timeReturn}</td>
-                    <td>${emp.reason}</td>
+                    <td>${emp.checkIn !== '-' ? emp.checkIn + ' WIB' : '-'}</td>
+                    <td>${emp.checkOut !== '-' ? emp.checkOut + ' WIB' : '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td>${timerCell}</td>
                     <td>
                         ${emp.status === 'outside' ? 
-                            `<button class="btn btn-sm" onclick="returnEmployee('${emp.id}')"><i class="fa-solid fa-arrow-right-to-city"></i> Set Kembali</button>` : 
-                            `<button class="btn btn-sm" style="opacity:0.5; cursor:not-allowed;" disabled><i class="fa-solid fa-check"></i> Standby</button>`
+                            `<button class="btn btn-sm" onclick="returnEmployee('${emp.id}')"><i class="fa-solid fa-building-circle-check"></i> Kembali Masuk</button>` : 
+                            emp.status === 'inside' ? 
+                            `<button class="btn btn-sm" onclick="quickCheckout('${emp.id}')"><i class="fa-solid fa-right-from-bracket"></i> Absen Pulang</button>` :
+                            `<button class="btn btn-sm" style="opacity:0.5; cursor:not-allowed;" disabled><i class="fa-solid fa-check"></i> Selesai</button>`
                         }
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Update timers immediately after render
+            updateOutsideTimers();
         }
 
-        // Populate Employee Select Options
-        function populateSelectEmployee() {
-            const select = document.getElementById('formEmpId');
-            select.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+        // Live StopWatch Updater
+        function updateOutsideTimers() {
+            const now = new Date();
             
-            employees.filter(e => e.status === 'inside').forEach(emp => {
-                const opt = document.createElement('option');
-                opt.value = emp.id;
-                opt.innerText = `${emp.name} (${emp.dept})`;
-                select.appendChild(opt);
+            employees.filter(e => e.status === 'outside').forEach(emp => {
+                if (!emp.startTimeISO) return;
+                
+                const start = new Date(emp.startTimeISO);
+                const elapsedMs = now - start;
+                
+                const elapsedSec = Math.floor(elapsedMs / 1000);
+                const mins = Math.floor(elapsedSec / 60);
+                const secs = elapsedSec % 60;
+                
+                const isOverdue = mins >= emp.allocatedMinutes;
+                const timerElement = document.getElementById(`timer-${emp.id}`);
+                
+                if(timerElement) {
+                    timerElement.innerHTML = `
+                        <span class="${isOverdue ? 'badge badge-red' : 'badge badge-amber'}">
+                            <i class="fa-solid ${isOverdue ? 'fa-triangle-exclamation' : 'fa-stopwatch'}"></i>
+                            Sudah ${mins}m ${secs}s ${isOverdue ? '(MELEBIHI BATAS!)' : ''}
+                        </span>
+                    `;
+                }
             });
         }
 
-        // Mark Employee as Returned to Office
-        function returnEmployee(empId) {
-            const emp = employees.find(e => e.id === empId);
-            if (emp) {
-                emp.status = 'inside';
-                emp.timeOut = '-';
-                emp.timeReturn = '-';
-                emp.reason = '-';
+        // Populate Dropdowns
+        function populateSelects() {
+            const selectPerm = document.getElementById('formEmpId');
+            const selectAttend = document.getElementById('attendEmpId');
 
-                renderStats();
-                renderTable();
-                populateSelectEmployee();
-                showToast(`Status ${emp.name} berhasil diubah menjadi Di Dalam Kantor.`);
+            selectPerm.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+            selectAttend.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+            
+            employees.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.innerText = `${emp.name} (${emp.id}) - ${emp.dept}`;
+                
+                selectAttend.appendChild(opt);
+
+                if(emp.status === 'inside') {
+                    const optPerm = opt.cloneNode(true);
+                    selectPerm.appendChild(optPerm);
+                }
+            });
+        }
+
+        // Switch Mode Absen Masuk/Pulang
+        function setAttendanceMode(mode) {
+            selectedAttendMode = mode;
+            const btnM = document.getElementById('btnModeMasuk');
+            const btnP = document.getElementById('btnModePulang');
+            const btnSub = document.getElementById('btnSubmitAttend');
+
+            if(mode === 'MASUK') {
+                btnM.className = 'mode-btn active-masuk';
+                btnP.className = 'mode-btn';
+                btnSub.className = 'btn btn-success';
+                btnSub.innerHTML = '<i class="fa-solid fa-check"></i> Proses Absen Masuk';
+            } else {
+                btnP.className = 'mode-btn active-pulang';
+                btnM.className = 'mode-btn';
+                btnSub.className = 'btn';
+                btnSub.style.backgroundColor = 'var(--purple)';
+                btnSub.style.color = '#fff';
+                btnSub.innerHTML = '<i class="fa-solid fa-moon"></i> Proses Absen Pulang';
             }
         }
 
-        // Submit Permission Form
+        // Submit Main Attendance
+        function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            const empId = document.getElementById('attendEmpId').value;
+            const now = new Date();
+            const timeStr = now.toTimeString().substring(0, 5);
+
+            const emp = employees.find(e => e.id === empId);
+            if(emp) {
+                if(selectedAttendMode === 'MASUK') {
+                    emp.status = 'inside';
+                    emp.checkIn = timeStr;
+                    showToast(`Presensi MASUK ${emp.name} berhasil dicatat (${timeStr} WIB).`);
+                } else {
+                    emp.status = 'home';
+                    emp.checkOut = timeStr;
+                    emp.startTimeISO = null;
+                    emp.reason = '-';
+                    showToast(`Presensi PULANG ${emp.name} berhasil dicatat (${timeStr} WIB).`);
+                }
+
+                renderStats();
+                renderTable();
+                populateSelects();
+                closeModal('attendanceModal');
+            }
+        }
+
+        // Submit Automatic Permission Form
         function handlePermissionSubmit(e) {
             e.preventDefault();
             const empId = document.getElementById('formEmpId').value;
             const reason = document.getElementById('formReason').value;
-            const timeOut = document.getElementById('formTimeOut').value;
-            const timeReturn = document.getElementById('formTimeReturn').value;
+            const durationMinutes = parseInt(document.getElementById('formDurationSelect').value);
             const notes = document.getElementById('formNotes').value;
+
+            const startTime = new Date();
 
             const emp = employees.find(e => e.id === empId);
             if (emp) {
                 emp.status = 'outside';
-                emp.timeOut = timeOut + ' WIB';
-                emp.timeReturn = timeReturn + ' WIB';
+                emp.startTimeISO = startTime.toISOString();
+                emp.allocatedMinutes = durationMinutes;
                 emp.reason = notes ? `${reason} (${notes})` : reason;
 
                 renderStats();
                 renderTable();
-                populateSelectEmployee();
+                populateSelects();
                 closeModal('permissionModal');
-                showToast(`Izin keluar kantor untuk ${emp.name} berhasil dicatat.`);
-                document.getElementById('permissionForm').reset();
-                setCurrentTimes();
+                showToast(`Izin keluar ${emp.name} dicatat (${durationMinutes} Mnt). StopWatch Aktif!`);
             }
         }
 
-        // Submit Banner Update
+        // Quick Checkout
+        function quickCheckout(empId) {
+            const emp = employees.find(e => e.id === empId);
+            if(emp) {
+                const now = new Date();
+                emp.status = 'home';
+                emp.checkOut = now.toTimeString().substring(0, 5);
+                emp.startTimeISO = null;
+                emp.reason = '-';
+
+                renderStats();
+                renderTable();
+                populateSelects();
+                showToast(`${emp.name} berhasil melakukan Absen Pulang.`);
+            }
+        }
+
+        // Return Employee to Office
+        function returnEmployee(empId) {
+            const emp = employees.find(e => e.id === empId);
+            if (emp) {
+                emp.status = 'inside';
+                emp.startTimeISO = null;
+                emp.reason = '-';
+
+                renderStats();
+                renderTable();
+                populateSelects();
+                showToast(`Status ${emp.name} kembali: Di Dalam Kantor.`);
+            }
+        }
+
+        // Banner Update
         function handleBannerSubmit(e) {
             e.preventDefault();
             const newBanner = document.getElementById('formBannerInput').value;
