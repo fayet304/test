@@ -1,12 +1,317 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AbsensiGlass — Panel Dashboard Absensi Karyawan</title>
-  </head>
-  <body class="bg-slate-950">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Absensi & Izin Office</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HTML5-QRCode Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    #reader video {
+      border-radius: 0.75rem;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+
+  <!-- Header -->
+  <header class="bg-indigo-700 text-white shadow-md py-4 px-6 mb-6">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold">Kios Absensi & Izin Office</h1>
+        <p class="text-indigo-200 text-xs sm:text-sm">Sistem Pencatatan Barcode Real-time</p>
+      </div>
+      <div id="clock" class="text-right text-lg font-semibold bg-indigo-800 px-3 py-1 rounded-lg">--:--:--</div>
+    </div>
+  </header>
+
+  <!-- Container Utama -->
+  <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+
+    <!-- Kolom Kiri: Scanner & Manual Input (5 Col) -->
+    <section class="lg:col-span-5 space-y-6">
+      
+      <!-- Area QR / Barcode Scanner -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+          Scanner ID Karyawan
+        </h2>
+        
+        <div id="reader" class="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl overflow-hidden min-h-[220px]"></div>
+        
+        <!-- Manual Input / USB Scanner Input -->
+        <form id="manualForm" class="mt-4 flex gap-2">
+          <input type="text" id="manualInput" placeholder="Scan/Ketik ID Karyawan + Enter" 
+            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm bg-slate-50">
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition">Proses</button>
+        </form>
+      </div>
+
+      <!-- Pilihan Tipe Akses & Kategori -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="mb-4">
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">1. Pilih Tipe Akses</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setTipeAkses('KELUAR')" id="btnKeluar" class="py-2.5 rounded-xl font-bold text-sm border-2 transition border-amber-500 bg-amber-500 text-white shadow-sm">KELUAR</button>
+            <button type="button" onclick="setTipeAkses('MASUK')" id="btnMasuk" class="py-2.5 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">MASUK (KEMBALI)</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">2. Pilih Kategori Aktivitas</label>
+          <div class="grid grid-cols-2 gap-2" id="categoryContainer">
+            <!-- Pilihan Kategori di-render oleh JavaScript -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Kolom Kanan: Detail Profile & Log Realtime (7 Col) -->
+    <section class="lg:col-span-7 space-y-6">
+      
+      <!-- Pop-up Notifikasi / Kartu Status Terakhir -->
+      <div id="statusCard" class="hidden bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center gap-4 transition-all">
+        <div class="p-3 bg-emerald-500 text-white rounded-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-bold text-emerald-900" id="statusTitle">Berhasil Memproses</h3>
+          <p class="text-sm text-emerald-700" id="statusDesc">-</p>
+        </div>
+      </div>
+
+      <!-- Tabel Log Hari Ini -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Log Aktivitas Hari Ini
+          </h2>
+          <button onclick="fetchTodayLogs()" class="text-xs text-indigo-600 hover:underline flex items-center gap-1">↻ Refresh Data</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider border-b">
+              <tr>
+                <th class="py-2.5 px-3">Jam</th>
+                <th class="py-2.5 px-3">ID / Nama</th>
+                <th class="py-2.5 px-3">Akses</th>
+                <th class="py-2.5 px-3">Kategori</th>
+                <th class="py-2.5 px-3">Durasi</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="5" class="py-6 text-center text-slate-400">Memuat data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // === CONFIGURATION ===
+    // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFt01BW9DzN8cCtTS3drO5U_-4ZXNEiquy53sdMjzAHV9tuxJsRNQpE4A7NXLcBj4gTA/exec";
+
+    const CATEGORIES = [
+      { id: "Absen Utama", label: "Masuk / Pulang", color: "bg-blue-50 text-blue-700 border-blue-200" },
+      { id: "Toilet", label: "Toilet", color: "bg-purple-50 text-purple-700 border-purple-200" },
+      { id: "Beli Makanan", label: "Beli Makanan", color: "bg-amber-50 text-amber-700 border-amber-200" },
+      { id: "Ibadah", label: "Ibadah", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+      { id: "Istirahat 1 Marketing", label: "Istirahat 1 Mkt", color: "bg-pink-50 text-pink-700 border-pink-200" },
+      { id: "Istirahat 2 Marketing", label: "Istirahat 2 Mkt", color: "bg-rose-50 text-rose-700 border-rose-200" },
+      { id: "Izin Merokok", label: "Izin Merokok", color: "bg-slate-100 text-slate-700 border-slate-300" }
+    ];
+
+    let selectedTipeAkses = "KELUAR";
+    let selectedKategori = "Absen Utama";
+    let html5QrcodeScanner = null;
+
+    // Beep Sound Effect via Web Audio API
+    function playBeep() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch A5
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    // Live Clock
+    setInterval(() => {
+      document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
+
+    // Initialize UI Elements
+    function initUI() {
+      const container = document.getElementById('categoryContainer');
+      container.innerHTML = CATEGORIES.map(cat => `
+        <button type="button" 
+          onclick="setKategori('${cat.id}')" 
+          id="cat-${cat.id.replace(/\s+/g, '')}"
+          class="p-2.5 rounded-xl border text-xs font-semibold text-left transition ${cat.color} ${selectedKategori === cat.id ? 'ring-2 ring-indigo-600' : 'opacity-70'}">
+          ${cat.label}
+        </button>
+      `).join('');
+    }
+
+    function setTipeAkses(tipe) {
+      selectedTipeAkses = tipe;
+      const btnKeluar = document.getElementById('btnKeluar');
+      const btnMasuk = document.getElementById('btnMasuk');
+
+      if (tipe === 'KELUAR') {
+        btnKeluar.className = "py-2.5 rounded-xl font-bold text-sm border-2 transition border-amber-500 bg-amber-500 text-white shadow-sm";
+        btnMasuk.className = "py-2.5 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition";
+      } else {
+        btnMasuk.className = "py-2.5 rounded-xl font-bold text-sm border-2 transition border-emerald-500 bg-emerald-500 text-white shadow-sm";
+        btnKeluar.className = "py-2.5 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition";
+      }
+    }
+
+    function setKategori(katId) {
+      selectedKategori = katId;
+      initUI();
+    }
+
+    // Submit Log Data to GAS
+    async function processAttendance(idKaryawan) {
+      if (!idKaryawan.trim()) return;
+
+      playBeep();
+      showStatus("Memproses...", `Mencatat ID: ${idKaryawan}`, "info");
+
+      const payload = {
+        idKaryawan: idKaryawan.trim(),
+        tipeAkses: selectedTipeAkses,
+        kategori: selectedKategori
+      };
+
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          const d = result.data;
+          const msg = `${d.namaKaryawan} (${d.tipeAkses} - ${d.kategori}) ${d.durasi !== '-' ? '| Durasi: ' + d.durasi + ' mnt' : ''}`;
+          showStatus("Berhasil Dicatat!", msg, "success");
+          fetchTodayLogs();
+        } else {
+          showStatus("Gagal!", result.message, "error");
+        }
+      } catch (err) {
+        showStatus("Error Sistem", "Gagal menghubungkan ke server Google Apps Script", "error");
+        console.error(err);
+      }
+    }
+
+    function showStatus(title, desc, type) {
+      const card = document.getElementById('statusCard');
+      const t = document.getElementById('statusTitle');
+      const d = document.getElementById('statusDesc');
+
+      card.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'bg-rose-50', 'border-rose-200', 'bg-blue-50', 'border-blue-200');
+
+      if (type === 'success') {
+        card.classList.add('bg-emerald-50', 'border-emerald-200');
+      } else if (type === 'error') {
+        card.classList.add('bg-rose-50', 'border-rose-200');
+      } else {
+        card.classList.add('bg-blue-50', 'border-blue-200');
+      }
+
+      t.innerText = title;
+      d.innerText = desc;
+    }
+
+    // Load Today Logs
+    async function fetchTodayLogs() {
+      const tbody = document.getElementById('logTableBody');
+      try {
+        const res = await fetch(GAS_WEB_APP_URL);
+        const json = await res.json();
+        
+        if (json.status === 'success' && json.data.length > 0) {
+          tbody.innerHTML = json.data.map(item => `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3 font-mono text-slate-500">${item.timestamp}</td>
+              <td class="py-2.5 px-3">
+                <span class="font-semibold block">${item.idKaryawan}</span>
+                <span class="text-slate-400 text-[11px]">${item.namaKaryawan}</span>
+              </td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipeAkses === 'MASUK' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                  ${item.tipeAkses}
+                </span>
+              </td>
+              <td class="py-2.5 px-3">${item.kategori}</td>
+              <td class="py-2.5 px-3 font-medium">${item.durasi !== '-' ? item.durasi + ' mnt' : '-'}</td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Belum ada aktivitas hari ini.</td></tr>`;
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500">Gagal memuat log data.</td></tr>`;
+      }
+    }
+
+    // Init Camera Barcode Scanner
+    function initScanner() {
+      let lastScannedCode = "";
+      let lastScannedTime = 0;
+
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+        fps: 10, 
+        qrbox: { width: 220, height: 220 },
+        aspectRatio: 1.0
+      });
+
+      html5QrcodeScanner.render((decodedText) => {
+        const now = Date.now();
+        // Prevent duplicate scans within 3 seconds
+        if (decodedText === lastScannedCode && (now - lastScannedTime) < 3000) return;
+        
+        lastScannedCode = decodedText;
+        lastScannedTime = now;
+        processAttendance(decodedText);
+      });
+    }
+
+    // Event Listener Manual Input
+    document.getElementById('manualForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('manualInput');
+      processAttendance(input.value);
+      input.value = "";
+    });
+
+    // Start Up
+    window.onload = () => {
+      initUI();
+      initScanner();
+      fetchTodayLogs();
+    };
+  </script>
+</body>
 </html>
