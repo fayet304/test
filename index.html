@@ -1,317 +1,1027 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Absensi & Izin Office</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- HTML5-QRCode Library -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <style>
-    #reader video {
-      border-radius: 0.75rem;
-      object-fit: cover;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Dashboard Presensi & Izin Keluar Kantor</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #030712;
+            --bg-card: #0b0f19;
+            --bg-subCard: #111827;
+            --bg-input: #1f293d;
+            --border-color: #1f293d;
+            --border-hover: #374151;
+            
+            --text-title: #ffffff;
+            --text-body: #94a3b8;
+            --text-muted: #64748b;
+            
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.15);
+            --success: #34d399;
+            --success-glow: rgba(52, 211, 153, 0.15);
+            --warning: #fbbf24;
+            --warning-glow: rgba(251, 191, 36, 0.15);
+            --danger: #f87171;
+            --danger-glow: rgba(248, 113, 113, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-body);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Running Banner Announcement */
+        .banner-ticker {
+            background: linear-gradient(90deg, #0c1a30 0%, #0f172a 100%);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            color: var(--primary);
+            padding: 8px 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        .banner-tag {
+            background: rgba(56, 189, 248, 0.2);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 15px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .banner-content {
+            white-space: nowrap;
+            animation: ticker 25s linear infinite;
+            display: inline-block;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .banner-ticker:hover .banner-content {
+            animation-play-state: paused;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Top Header Navigation */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 9;
+        }
+
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-glow);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-title);
+            letter-spacing: -0.01em;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .clock-widget {
+            text-align: right;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+
+        .clock-time {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-title);
+        }
+
+        .clock-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn {
+            background-color: var(--bg-subCard);
+            color: var(--text-title);
+            border: 1px solid var(--border-color);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            border-color: var(--border-hover);
+            background-color: var(--bg-input);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #030712;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #0ea5e9;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Main Container */
+        main {
+            padding: 24px 28px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Metric Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card.blue::after { background-color: var(--primary); }
+        .stat-card.green::after { background-color: var(--success); }
+        .stat-card.amber::after { background-color: var(--warning); }
+        .stat-card.red::after { background-color: var(--danger); }
+
+        .stat-info h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-title);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-desc {
+            font-size: 13px;
+            color: var(--text-body);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .blue .stat-icon { background: var(--primary-glow); color: var(--primary); }
+        .green .stat-icon { background: var(--success-glow); color: var(--success); }
+        .amber .stat-icon { background: var(--warning-glow); color: var(--warning); }
+        .red .stat-icon { background: var(--danger-glow); color: var(--danger); }
+
+        /* Panel Main Content Area */
+        .content-section {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background-color: rgba(17, 24, 39, 0.4);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            background-color: var(--bg-subCard);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-body);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: #030712;
+            font-weight: 600;
+        }
+
+        .search-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-box input {
+            width: 100%;
+            background-color: var(--bg-subCard);
+            border: 1px solid var(--border-color);
+            color: var(--text-title);
+            padding: 9px 12px 9px 36px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Table Design */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: var(--bg-subCard);
+            color: var(--text-title);
+            font-weight: 600;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            color: var(--text-body);
+        }
+
+        tr:hover td {
+            background-color: rgba(31, 41, 61, 0.4);
+        }
+
+        .emp-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .emp-name {
+            color: var(--text-title);
+            font-weight: 600;
+        }
+
+        .emp-dept {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-green {
+            background: var(--success-glow);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-amber {
+            background: var(--warning-glow);
+            color: var(--warning);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .badge-green .badge-dot { background-color: var(--success); }
+        .badge-amber .badge-dot { background-color: var(--warning); }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Modal Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-title);
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: var(--text-title);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-body);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-subCard);
+            border: 1px solid var(--border-color);
+            color: var(--text-title);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--success);
+            color: var(--text-title);
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 200;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast i {
+            color: var(--success);
+            font-size: 18px;
+        }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+<body>
 
-  <!-- Header -->
-  <header class="bg-indigo-700 text-white shadow-md py-4 px-6 mb-6">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <div>
-        <h1 class="text-2xl font-bold">Kios Absensi & Izin Office</h1>
-        <p class="text-indigo-200 text-xs sm:text-sm">Sistem Pencatatan Barcode Real-time</p>
-      </div>
-      <div id="clock" class="text-right text-lg font-semibold bg-indigo-800 px-3 py-1 rounded-lg">--:--:--</div>
+    <!-- Running Announcement Banner -->
+    <div class="banner-ticker">
+        <div class="banner-tag"><i class="fa-solid fa-bullhorn"></i> PENGUMUMAN</div>
+        <div class="banner-content" id="bannerText">
+            [HRD ALERT] Seluruh Karyawan Wajib Mengisi Form Izin Keluar Kantor Kiosk Saat Meninggalkan Area Gedung untuk Keperluan Apapun. | Jadwal Maintenance Server Utama: Sabtu, 08 Agustus 2026 Pukul 22.00 WIB.
+        </div>
     </div>
-  </header>
 
-  <!-- Container Utama -->
-  <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-
-    <!-- Kolom Kiri: Scanner & Manual Input (5 Col) -->
-    <section class="lg:col-span-5 space-y-6">
-      
-      <!-- Area QR / Barcode Scanner -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-          Scanner ID Karyawan
-        </h2>
-        
-        <div id="reader" class="w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl overflow-hidden min-h-[220px]"></div>
-        
-        <!-- Manual Input / USB Scanner Input -->
-        <form id="manualForm" class="mt-4 flex gap-2">
-          <input type="text" id="manualInput" placeholder="Scan/Ketik ID Karyawan + Enter" 
-            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm bg-slate-50">
-          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition">Proses</button>
-        </form>
-      </div>
-
-      <!-- Pilihan Tipe Akses & Kategori -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div class="mb-4">
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">1. Pilih Tipe Akses</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="setTipeAkses('KELUAR')" id="btnKeluar" class="py-2.5 rounded-xl font-bold text-sm border-2 transition border-amber-500 bg-amber-500 text-white shadow-sm">KELUAR</button>
-            <button type="button" onclick="setTipeAkses('MASUK')" id="btnMasuk" class="py-2.5 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">MASUK (KEMBALI)</button>
-          </div>
+    <!-- Top Navigation Header -->
+    <header>
+        <div class="brand-area">
+            <div class="brand-icon">
+                <i class="fa-solid fa-id-card-clip"></i>
+            </div>
+            <div>
+                <div class="brand-title">Absensi & DirectPass Kiosk</div>
+                <div class="brand-subtitle">Panel Monitoring Real-Time Gedung Pusat</div>
+            </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">2. Pilih Kategori Aktivitas</label>
-          <div class="grid grid-cols-2 gap-2" id="categoryContainer">
-            <!-- Pilihan Kategori di-render oleh JavaScript -->
-          </div>
+        <div class="header-controls">
+            <div class="clock-widget">
+                <div class="clock-time" id="liveClock">00:00:00 WIB</div>
+                <div class="clock-date" id="liveDate">Selasa, 4 Agustus 2026</div>
+            </div>
+            <button class="btn" onclick="openModal('announcementModal')">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Banner
+            </button>
+            <button class="btn btn-primary" onclick="openModal('permissionModal')">
+                <i class="fa-solid fa-person-walking-arrow-right"></i> Form Izin Keluar
+            </button>
         </div>
-      </div>
+    </header>
 
-    </section>
+    <!-- Main Dashboard Content -->
+    <main>
+        <!-- Statistics Section -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-info">
+                    <h4>Total Karyawan Aktif</h4>
+                    <div class="stat-number" id="statTotal">142</div>
+                    <div class="stat-desc">Terdaftar dalam sistem</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
 
-    <!-- Kolom Kanan: Detail Profile & Log Realtime (7 Col) -->
-    <section class="lg:col-span-7 space-y-6">
-      
-      <!-- Pop-up Notifikasi / Kartu Status Terakhir -->
-      <div id="statusCard" class="hidden bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center gap-4 transition-all">
-        <div class="p-3 bg-emerald-500 text-white rounded-xl">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <div class="stat-card green">
+                <div class="stat-info">
+                    <h4>Di Dalam Kantor</h4>
+                    <div class="stat-number" id="statInside">125</div>
+                    <div class="stat-desc"><span id="pctInside">88</span>% Kapasitas Terisi</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-building-user"></i>
+                </div>
+            </div>
+
+            <div class="stat-card amber">
+                <div class="stat-info">
+                    <h4>Di Luar / Izin Active</h4>
+                    <div class="stat-number" id="statOutside">17</div>
+                    <div class="stat-desc"><span id="pctOutside">12</span>% Dalam Penugasan</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-building-circle-arrow-right"></i>
+                </div>
+            </div>
+
+            <div class="stat-card red">
+                <div class="stat-info">
+                    <h4>Izin Melewati Estimasi</h4>
+                    <div class="stat-number" id="statOverdue">1</div>
+                    <div class="stat-desc">Perlu konfirmasi HRD</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+            </div>
         </div>
-        <div class="flex-1">
-          <h3 class="font-bold text-emerald-900" id="statusTitle">Berhasil Memproses</h3>
-          <p class="text-sm text-emerald-700" id="statusDesc">-</p>
+
+        <!-- Employee Table & Monitoring Section -->
+        <div class="content-section">
+            <div class="toolbar">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterTab('all', this)">Semua (142)</button>
+                    <button class="tab-btn" onclick="filterTab('inside', this)">Di Dalam (125)</button>
+                    <button class="tab-btn" onclick="filterTab('outside', this)">Di Luar Kantor (17)</button>
+                </div>
+
+                <div class="search-area">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Cari nama karyawan, NIP, atau departemen..." onkeyup="renderTable()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Karyawan</th>
+                            <th>NIP</th>
+                            <th>Check-in Pagi</th>
+                            <th>Status Saat Ini</th>
+                            <th>Jam Keluar</th>
+                            <th>Estimasi Kembali</th>
+                            <th>Keperluan / Tujuan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody">
+                        <!-- Rendered via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
-      </div>
+    </main>
 
-      <!-- Tabel Log Hari Ini -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            Log Aktivitas Hari Ini
-          </h2>
-          <button onclick="fetchTodayLogs()" class="text-xs text-indigo-600 hover:underline flex items-center gap-1">↻ Refresh Data</button>
+    <!-- Modal Form: Input Izin Keluar Kantor -->
+    <div class="modal-overlay" id="permissionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-right-from-bracket" style="color: var(--primary); margin-right: 8px;"></i> Form Izin Keluar Kantor</h3>
+                <button class="close-btn" onclick="closeModal('permissionModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="permissionForm" onsubmit="handlePermissionSubmit(event)">
+                <div class="form-group">
+                    <label>Pilih Karyawan</label>
+                    <select class="form-control" id="formEmpId" required>
+                        <option value="">-- Pilih Karyawan --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Keperluan / Alasan Keluar</label>
+                    <select class="form-control" id="formReason" required>
+                        <option value="Dinas Luar & Meeting Klien">Dinas Luar & Meeting Klien</option>
+                        <option value="Operasional Lapangan / Logistik">Operasional Lapangan / Logistik</option>
+                        <option value="Urusan Pribadi Singkat">Urusan Pribadi Singkat</option>
+                        <option value="Istirahat Medis / Klinik">Istirahat Medis / Klinik</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Jam Keluar</label>
+                        <input type="time" class="form-control" id="formTimeOut" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Est. Jam Kembali</label>
+                        <input type="time" class="form-control" id="formTimeReturn" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Catatan / Lokasi Tujuan</label>
+                    <input type="text" class="form-control" id="formNotes" placeholder="Contoh: Meeting PT Maju Bersama, Jakarta Selatan">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('permissionModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Catat Izin Keluar</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
-            <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider border-b">
-              <tr>
-                <th class="py-2.5 px-3">Jam</th>
-                <th class="py-2.5 px-3">ID / Nama</th>
-                <th class="py-2.5 px-3">Akses</th>
-                <th class="py-2.5 px-3">Kategori</th>
-                <th class="py-2.5 px-3">Durasi</th>
-              </tr>
-            </thead>
-            <tbody id="logTableBody" class="divide-y divide-slate-100">
-              <tr>
-                <td colspan="5" class="py-6 text-center text-slate-400">Memuat data...</td>
-              </tr>
-            </tbody>
-          </table>
+    <!-- Modal Form: Edit Banner Pengumuman -->
+    <div class="modal-overlay" id="announcementModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-bullhorn" style="color: var(--primary); margin-right: 8px;"></i> Update Ticker Pengumuman</h3>
+                <button class="close-btn" onclick="closeModal('announcementModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleBannerSubmit(event)">
+                <div class="form-group">
+                    <label>Teks Pengumuman Header (Running Text)</label>
+                    <textarea class="form-control" id="formBannerInput" rows="4" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('announcementModal')">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Banner</button>
+                </div>
+            </form>
         </div>
-      </div>
+    </div>
 
-    </section>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toastMsg">Berhasil memperbarui data status.</span>
+    </div>
 
-  </main>
+    <!-- Application Script -->
+    <script>
+        // Initial Mock Employees Data
+        let employees = [
+            { id: 'EMP-001', name: 'Budi Santoso', dept: 'IT Support', status: 'outside', checkIn: '07:55', timeOut: '09:15', timeReturn: '11:30', reason: 'Maintenance Server Cabang' },
+            { id: 'EMP-002', name: 'Siti Rahmawati', dept: 'Marketing', status: 'outside', checkIn: '08:05', timeOut: '10:00', timeReturn: '14:00', reason: 'Meeting Klien Eksternal' },
+            { id: 'EMP-003', name: 'Andi Wijaya', dept: 'Operational', status: 'inside', checkIn: '08:00', timeOut: '-', timeReturn: '-', reason: '-' },
+            { id: 'EMP-004', name: 'Dewi Lestari', dept: 'HRD & Legal', status: 'outside', checkIn: '08:12', timeOut: '10:30', timeReturn: '11:45', reason: 'Urusan Bank & Dokumen' },
+            { id: 'EMP-005', name: 'Rahmat Hidayat', dept: 'Finance', status: 'inside', checkIn: '07:48', timeOut: '-', timeReturn: '-', reason: '-' },
+            { id: 'EMP-006', name: 'Eka Prasetya', dept: 'Software Dev', status: 'inside', checkIn: '08:10', timeOut: '-', timeReturn: '-', reason: '-' },
+            { id: 'EMP-007', name: 'Lia Fitriani', dept: 'General Affair', status: 'outside', checkIn: '08:02', timeOut: '09:00', timeReturn: '10:15', reason: 'Pembelian Logistik Kantor' },
+            { id: 'EMP-008', name: 'Rian Kurniawan', dept: 'QA Engineer', status: 'inside', checkIn: '08:15', timeOut: '-', timeReturn: '-', reason: '-' }
+        ];
 
-  <script>
-    // === CONFIGURATION ===
-    // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFt01BW9DzN8cCtTS3drO5U_-4ZXNEiquy53sdMjzAHV9tuxJsRNQpE4A7NXLcBj4gTA/exec";
+        let currentFilter = 'all';
 
-    const CATEGORIES = [
-      { id: "Absen Utama", label: "Masuk / Pulang", color: "bg-blue-50 text-blue-700 border-blue-200" },
-      { id: "Toilet", label: "Toilet", color: "bg-purple-50 text-purple-700 border-purple-200" },
-      { id: "Beli Makanan", label: "Beli Makanan", color: "bg-amber-50 text-amber-700 border-amber-200" },
-      { id: "Ibadah", label: "Ibadah", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-      { id: "Istirahat 1 Marketing", label: "Istirahat 1 Mkt", color: "bg-pink-50 text-pink-700 border-pink-200" },
-      { id: "Istirahat 2 Marketing", label: "Istirahat 2 Mkt", color: "bg-rose-50 text-rose-700 border-rose-200" },
-      { id: "Izin Merokok", label: "Izin Merokok", color: "bg-slate-100 text-slate-700 border-slate-300" }
-    ];
-
-    let selectedTipeAkses = "KELUAR";
-    let selectedKategori = "Absen Utama";
-    let html5QrcodeScanner = null;
-
-    // Beep Sound Effect via Web Audio API
-    function playBeep() {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Pitch A5
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
-    }
-
-    // Live Clock
-    setInterval(() => {
-      document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
-    }, 1000);
-
-    // Initialize UI Elements
-    function initUI() {
-      const container = document.getElementById('categoryContainer');
-      container.innerHTML = CATEGORIES.map(cat => `
-        <button type="button" 
-          onclick="setKategori('${cat.id}')" 
-          id="cat-${cat.id.replace(/\s+/g, '')}"
-          class="p-2.5 rounded-xl border text-xs font-semibold text-left transition ${cat.color} ${selectedKategori === cat.id ? 'ring-2 ring-indigo-600' : 'opacity-70'}">
-          ${cat.label}
-        </button>
-      `).join('');
-    }
-
-    function setTipeAkses(tipe) {
-      selectedTipeAkses = tipe;
-      const btnKeluar = document.getElementById('btnKeluar');
-      const btnMasuk = document.getElementById('btnMasuk');
-
-      if (tipe === 'KELUAR') {
-        btnKeluar.className = "py-2.5 rounded-xl font-bold text-sm border-2 transition border-amber-500 bg-amber-500 text-white shadow-sm";
-        btnMasuk.className = "py-2.5 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition";
-      } else {
-        btnMasuk.className = "py-2.5 rounded-xl font-bold text-sm border-2 transition border-emerald-500 bg-emerald-500 text-white shadow-sm";
-        btnKeluar.className = "py-2.5 rounded-xl font-bold text-sm border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition";
-      }
-    }
-
-    function setKategori(katId) {
-      selectedKategori = katId;
-      initUI();
-    }
-
-    // Submit Log Data to GAS
-    async function processAttendance(idKaryawan) {
-      if (!idKaryawan.trim()) return;
-
-      playBeep();
-      showStatus("Memproses...", `Mencatat ID: ${idKaryawan}`, "info");
-
-      const payload = {
-        idKaryawan: idKaryawan.trim(),
-        tipeAkses: selectedTipeAkses,
-        kategori: selectedKategori
-      };
-
-      try {
-        const response = await fetch(GAS_WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initClock();
+            renderStats();
+            renderTable();
+            populateSelectEmployee();
+            setCurrentTimes();
         });
 
-        const result = await response.json();
-        
-        if (result.status === "success") {
-          const d = result.data;
-          const msg = `${d.namaKaryawan} (${d.tipeAkses} - ${d.kategori}) ${d.durasi !== '-' ? '| Durasi: ' + d.durasi + ' mnt' : ''}`;
-          showStatus("Berhasil Dicatat!", msg, "success");
-          fetchTodayLogs();
-        } else {
-          showStatus("Gagal!", result.message, "error");
+        // Real-Time Clock
+        function initClock() {
+            function update() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+                const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                
+                document.getElementById('liveClock').innerText = timeStr;
+                document.getElementById('liveDate').innerText = dateStr;
+            }
+            update();
+            setInterval(update, 1000);
         }
-      } catch (err) {
-        showStatus("Error Sistem", "Gagal menghubungkan ke server Google Apps Script", "error");
-        console.error(err);
-      }
-    }
 
-    function showStatus(title, desc, type) {
-      const card = document.getElementById('statusCard');
-      const t = document.getElementById('statusTitle');
-      const d = document.getElementById('statusDesc');
-
-      card.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'bg-rose-50', 'border-rose-200', 'bg-blue-50', 'border-blue-200');
-
-      if (type === 'success') {
-        card.classList.add('bg-emerald-50', 'border-emerald-200');
-      } else if (type === 'error') {
-        card.classList.add('bg-rose-50', 'border-rose-200');
-      } else {
-        card.classList.add('bg-blue-50', 'border-blue-200');
-      }
-
-      t.innerText = title;
-      d.innerText = desc;
-    }
-
-    // Load Today Logs
-    async function fetchTodayLogs() {
-      const tbody = document.getElementById('logTableBody');
-      try {
-        const res = await fetch(GAS_WEB_APP_URL);
-        const json = await res.json();
-        
-        if (json.status === 'success' && json.data.length > 0) {
-          tbody.innerHTML = json.data.map(item => `
-            <tr class="hover:bg-slate-50">
-              <td class="py-2.5 px-3 font-mono text-slate-500">${item.timestamp}</td>
-              <td class="py-2.5 px-3">
-                <span class="font-semibold block">${item.idKaryawan}</span>
-                <span class="text-slate-400 text-[11px]">${item.namaKaryawan}</span>
-              </td>
-              <td class="py-2.5 px-3">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipeAkses === 'MASUK' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                  ${item.tipeAkses}
-                </span>
-              </td>
-              <td class="py-2.5 px-3">${item.kategori}</td>
-              <td class="py-2.5 px-3 font-medium">${item.durasi !== '-' ? item.durasi + ' mnt' : '-'}</td>
-            </tr>
-          `).join('');
-        } else {
-          tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Belum ada aktivitas hari ini.</td></tr>`;
+        // Set default current time in modal
+        function setCurrentTimes() {
+            const now = new Date();
+            const timeOutStr = now.toTimeString().substring(0, 5);
+            
+            const returnTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Default +2 hours
+            const timeReturnStr = returnTime.toTimeString().substring(0, 5);
+            
+            document.getElementById('formTimeOut').value = timeOutStr;
+            document.getElementById('formTimeReturn').value = timeReturnStr;
         }
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-rose-500">Gagal memuat log data.</td></tr>`;
-      }
-    }
 
-    // Init Camera Barcode Scanner
-    function initScanner() {
-      let lastScannedCode = "";
-      let lastScannedTime = 0;
+        // Calculate and Render Metrics
+        function renderStats() {
+            const total = employees.length + 134; // Simulating total base 142
+            const outsideCount = employees.filter(e => e.status === 'outside').length + 13;
+            const insideCount = total - outsideCount;
 
-      html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-        fps: 10, 
-        qrbox: { width: 220, height: 220 },
-        aspectRatio: 1.0
-      });
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statInside').innerText = insideCount;
+            document.getElementById('statOutside').innerText = outsideCount;
 
-      html5QrcodeScanner.render((decodedText) => {
-        const now = Date.now();
-        // Prevent duplicate scans within 3 seconds
-        if (decodedText === lastScannedCode && (now - lastScannedTime) < 3000) return;
-        
-        lastScannedCode = decodedText;
-        lastScannedTime = now;
-        processAttendance(decodedText);
-      });
-    }
+            const pctIn = Math.round((insideCount / total) * 100);
+            const pctOut = Math.round((outsideCount / total) * 100);
 
-    // Event Listener Manual Input
-    document.getElementById('manualForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = document.getElementById('manualInput');
-      processAttendance(input.value);
-      input.value = "";
-    });
+            document.getElementById('pctInside').innerText = pctIn;
+            document.getElementById('pctOutside').innerText = pctOut;
+        }
 
-    // Start Up
-    window.onload = () => {
-      initUI();
-      initScanner();
-      fetchTodayLogs();
-    };
-  </script>
+        // Filter Handlers
+        function filterTab(type, btnElement) {
+            currentFilter = type;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderTable();
+        }
+
+        // Render Employee Table
+        function renderTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            tbody.innerHTML = '';
+
+            let filtered = employees.filter(emp => {
+                const matchFilter = currentFilter === 'all' || emp.status === currentFilter;
+                const matchQuery = emp.name.toLowerCase().includes(query) || 
+                                   emp.id.toLowerCase().includes(query) || 
+                                   emp.dept.toLowerCase().includes(query);
+                return matchFilter && matchQuery;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            <i class="fa-solid fa-inbox" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                            Tidak ada data karyawan yang cocok.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach(emp => {
+                const tr = document.createElement('tr');
+                const initials = emp.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+                
+                tr.innerHTML = `
+                    <td>
+                        <div class="emp-profile">
+                            <div class="avatar">${initials}</div>
+                            <div>
+                                <div class="emp-name">${emp.name}</div>
+                                <div class="emp-dept">${emp.dept}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code>${emp.id}</code></td>
+                    <td>${emp.checkIn} WIB</td>
+                    <td>
+                        ${emp.status === 'inside' ? 
+                            `<span class="badge badge-green"><span class="badge-dot"></span> Di Dalam Kantor</span>` : 
+                            `<span class="badge badge-amber"><span class="badge-dot"></span> Di Luar Kantor</span>`
+                        }
+                    </td>
+                    <td>${emp.timeOut}</td>
+                    <td>${emp.timeReturn}</td>
+                    <td>${emp.reason}</td>
+                    <td>
+                        ${emp.status === 'outside' ? 
+                            `<button class="btn btn-sm" onclick="returnEmployee('${emp.id}')"><i class="fa-solid fa-arrow-right-to-city"></i> Set Kembali</button>` : 
+                            `<button class="btn btn-sm" style="opacity:0.5; cursor:not-allowed;" disabled><i class="fa-solid fa-check"></i> Standby</button>`
+                        }
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Populate Employee Select Options
+        function populateSelectEmployee() {
+            const select = document.getElementById('formEmpId');
+            select.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+            
+            employees.filter(e => e.status === 'inside').forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.innerText = `${emp.name} (${emp.dept})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // Mark Employee as Returned to Office
+        function returnEmployee(empId) {
+            const emp = employees.find(e => e.id === empId);
+            if (emp) {
+                emp.status = 'inside';
+                emp.timeOut = '-';
+                emp.timeReturn = '-';
+                emp.reason = '-';
+
+                renderStats();
+                renderTable();
+                populateSelectEmployee();
+                showToast(`Status ${emp.name} berhasil diubah menjadi Di Dalam Kantor.`);
+            }
+        }
+
+        // Submit Permission Form
+        function handlePermissionSubmit(e) {
+            e.preventDefault();
+            const empId = document.getElementById('formEmpId').value;
+            const reason = document.getElementById('formReason').value;
+            const timeOut = document.getElementById('formTimeOut').value;
+            const timeReturn = document.getElementById('formTimeReturn').value;
+            const notes = document.getElementById('formNotes').value;
+
+            const emp = employees.find(e => e.id === empId);
+            if (emp) {
+                emp.status = 'outside';
+                emp.timeOut = timeOut + ' WIB';
+                emp.timeReturn = timeReturn + ' WIB';
+                emp.reason = notes ? `${reason} (${notes})` : reason;
+
+                renderStats();
+                renderTable();
+                populateSelectEmployee();
+                closeModal('permissionModal');
+                showToast(`Izin keluar kantor untuk ${emp.name} berhasil dicatat.`);
+                document.getElementById('permissionForm').reset();
+                setCurrentTimes();
+            }
+        }
+
+        // Submit Banner Update
+        function handleBannerSubmit(e) {
+            e.preventDefault();
+            const newBanner = document.getElementById('formBannerInput').value;
+            if (newBanner) {
+                document.getElementById('bannerText').innerText = newBanner;
+                closeModal('announcementModal');
+                showToast('Banner pengumuman berhasil diperbarui.');
+            }
+        }
+
+        // Modal Helpers
+        function openModal(modalId) {
+            if(modalId === 'announcementModal') {
+                document.getElementById('formBannerInput').value = document.getElementById('bannerText').innerText.trim();
+            }
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+    </script>
 </body>
 </html>
