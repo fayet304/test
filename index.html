@@ -3,97 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin Absensi</title>
+  <title>Kios Scanner Absensi</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-    body { background: #0f172a; color: #f8fafc; padding: 24px; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .header h1 { font-size: 1.5rem; color: #38bdf8; }
-    
-    /* Grid Stat Cards */
-    .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .card-stat { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; }
-    .card-stat p { font-size: 0.85rem; color: #94a3b8; }
-    .card-stat h2 { font-size: 1.8rem; margin-top: 8px; }
-    
-    /* Table */
-    .table-container { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 14px 16px; border-bottom: 1px solid #334155; }
-    th { background: #1e293b; color: #38bdf8; font-size: 0.85rem; text-transform: uppercase; }
-    tr:hover { background: rgba(255,255,255,0.02); }
-    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-    .badge-masuk { background: #065f46; color: #34d399; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 16px; }
+    .card { width: 100%; max-width: 420px; background: #1e293b; border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+    h2 { color: #38bdf8; margin-bottom: 4px; font-size: 1.4rem; }
+    p.subtitle { color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px; }
+    .mode-group { display: flex; gap: 8px; margin-bottom: 16px; }
+    .btn-mode { flex: 1; padding: 12px 6px; border: none; border-radius: 10px; font-weight: bold; font-size: 0.85rem; color: #fff; cursor: pointer; opacity: 0.4; transition: 0.2s; background: #334155; }
+    .btn-mode.active { opacity: 1; transform: scale(1.02); }
+    .btn-masuk.active { background: #059669; }
+    .btn-izin.active { background: #d97706; }
+    .btn-pulang.active { background: #2563eb; }
+    #reader { width: 100%; border-radius: 12px; overflow: hidden; border: 2px solid #334155; background: #000; }
+    #status-box { margin-top: 16px; padding: 14px; border-radius: 10px; font-weight: 600; font-size: 0.95rem; display: none; }
+    .status-masuk { background-color: #065f46; color: #34d399; border: 1px solid #059669; }
+    .status-izin { background-color: #78350f; color: #fde047; border: 1px solid #d97706; }
+    .status-pulang { background-color: #1e40af; color: #60a5fa; border: 1px solid #2563eb; }
+    .status-error { background-color: #991b1b; color: #f87171; border: 1px solid #dc2626; }
+    .loading { color: #38bdf8; font-size: 0.9rem; margin-top: 12px; display: none; font-weight: 600; }
   </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>MONITORING ABSENSI REAL-TIME</h1>
-  <div id="sync-status" style="font-size: 0.85rem; color: #10b981;">● Live Syncing...</div>
-</div>
+<div class="card">
+  <h2>KIOS ABSENSI</h2>
+  <p class="subtitle">Pilih jenis absen, lalu scan barcode ID Card</p>
 
-<div class="grid-stats">
-  <div class="card-stat"><p>Total Karyawan</p><h2 id="st-total">0</h2></div>
-  <div class="card-stat"><p>Hadir Hari Ini</p><h2 id="st-hadir" style="color:#34d399">0</h2></div>
-  <div class="card-stat"><p>Izin Keluar</p><h2 id="st-izin" style="color:#facc15">0</h2></div>
-  <div class="card-stat"><p>Sudah Pulang</p><h2 id="st-pulang" style="color:#60a5fa">0</h2></div>
-</div>
+  <div class="mode-group">
+    <button id="btn-MASUK" class="btn-mode btn-masuk active" onclick="setMode('MASUK')">MASUK</button>
+    <button id="btn-IZIN" class="btn-mode btn-izin" onclick="setMode('IZIN')">IZIN</button>
+    <button id="btn-PULANG" class="btn-mode btn-pulang" onclick="setMode('PULANG')">PULANG</button>
+  </div>
 
-<div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>ID Karyawan</th>
-        <th>Nama</th>
-        <th>Jam Masuk</th>
-        <th>Log Izin</th>
-        <th>Jam Pulang</th>
-      </tr>
-    </thead>
-    <tbody id="log-table">
-      <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
-    </tbody>
-  </table>
+  <div id="reader"></div>
+  <div id="loading" class="loading">Memproses data...</div>
+  <div id="status-box"></div>
 </div>
 
 <script>
-  const URL = "https://script.google.com/macros/s/AKfycbyZd7J5SqvXa0SDy8Nirb1ENWGBApyagGuklEc_lQGm_kb2BiAdEGhMeEppv9PgHcJ8lA/exec";
+  // PASTE URL DEPLOYMENT APPS SCRIPT ANDA DI SINI
+  const SCRIPT_URL = "URL_GOOGLE_APPS_SCRIPT_ANDA";
 
-  function fetchDashboard() {
-    fetch(URL)
+  let currentMode = "MASUK";
+  let isScanningAllowed = true;
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-${mode}`).classList.add('active');
+  }
+
+  function onScanSuccess(decodedText) {
+    if (!isScanningAllowed) return;
+
+    isScanningAllowed = false;
+    showLoading(true);
+    hideStatus();
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ idCard: decodedText, mode: currentMode })
+    })
     .then(res => res.json())
     .then(data => {
-      document.getElementById('st-total').innerText = data.totalKaryawan;
-      document.getElementById('st-hadir').innerText = data.hadir;
-      document.getElementById('st-izin').innerText = data.izin;
-      document.getElementById('st-pulang').innerText = data.pulang;
+      showLoading(false);
+      if (data.status === "success") {
+        let cls = "status-masuk";
+        if (data.type === "IZIN") cls = "status-izin";
+        if (data.type === "PULANG") cls = "status-pulang";
 
-      let tbody = document.getElementById('log-table');
-      if (data.logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada data absensi hari ini</td></tr>`;
-        return;
+        showStatus(`[${data.type}] ${data.nama}<br>${data.message} (${data.time})`, cls);
+      } else {
+        showStatus("Gagal: " + data.message, "status-error");
       }
 
-      let html = '';
-      data.logs.forEach(row => {
-        html += `
-          <tr>
-            <td><b>${row.id}</b></td>
-            <td>${row.nama}</td>
-            <td><span class="badge badge-masuk">${row.masuk}</span></td>
-            <td>${row.izin || '-'}</td>
-            <td>${row.pulang || '-'}</td>
-          </tr>
-        `;
-      });
-      tbody.innerHTML = html;
+      setTimeout(() => {
+        isScanningAllowed = true;
+        hideStatus();
+      }, 3000);
+    })
+    .catch(err => {
+      showLoading(false);
+      showStatus("Kesalahan koneksi internet!", "status-error");
+      setTimeout(() => { isScanningAllowed = true; hideStatus(); }, 3000);
     });
   }
 
-  // Auto Refresh setiap 5 Detik
-  setInterval(fetchDashboard, 5000);
-  fetchDashboard();
+  function showLoading(show) {
+    document.getElementById("loading").style.display = show ? "block" : "none";
+  }
+
+  function showStatus(text, className) {
+    const box = document.getElementById("status-box");
+    box.innerHTML = text;
+    box.className = className;
+    box.style.display = "block";
+  }
+
+  function hideStatus() {
+    document.getElementById("status-box").style.display = "none";
+  }
+
+  const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 }, false);
+  html5QrcodeScanner.render(onScanSuccess);
 </script>
 
 </body>
