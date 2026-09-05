@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Absensi Karyawan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50: '#f0fdfa',
+            100: '#ccfbf1',
+            200: '#99f6e4',
+            300: '#5eead4',
+            400: '#2dd4bf',
+            500: '#14b8a6',
+            600: '#0d9488',
+            700: '#0f766e',
+            800: '#115e59',
+            900: '#134e4a'
+          },
+          ink: '#0f172a'
+        },
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-slate-50 text-ink font-sans min-h-screen flex flex-col">
+
+  <!-- ======================= HEADER / NAV ======================= -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold">A</div>
+        <span class="font-bold text-lg tracking-tight">Absensi<span class="text-brand-600">Kita</span></span>
+      </div>
+      <nav class="hidden md:flex items-center gap-1" id="nav-desktop">
+        <button data-tab="dashboard" class="nav-btn">Dashboard</button>
+        <button data-tab="absensi" class="nav-btn">Absen / Izin</button>
+        <button data-tab="riwayat" class="nav-btn">Riwayat</button>
+        <button data-tab="admin" class="nav-btn">Admin</button>
+      </nav>
+      <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-slate-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <nav id="nav-mobile" class="md:hidden hidden flex-col border-t border-slate-200 px-4 py-2 gap-1">
+      <button data-tab="dashboard" class="nav-btn-mobile">Dashboard</button>
+      <button data-tab="absensi" class="nav-btn-mobile">Absen / Izin</button>
+      <button data-tab="riwayat" class="nav-btn-mobile">Riwayat</button>
+      <button data-tab="admin" class="nav-btn-mobile">Admin</button>
+    </nav>
+  </header>
+
+  <!-- ======================= ANNOUNCEMENT BAR ======================= -->
+  <div id="announcement-bar" class="hidden bg-amber-50 border-b border-amber-200 text-amber-900 text-sm">
+    <div class="max-w-6xl mx-auto px-4 py-2 flex items-start gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+      <p id="announcement-text" class="font-medium"></p>
+    </div>
+  </div>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
+
+    <!-- ======================= DASHBOARD ======================= -->
+    <section id="tab-dashboard" class="tab-section">
+      <h1 class="text-2xl font-bold mb-1">Dashboard</h1>
+      <p class="text-slate-500 mb-6">Ringkasan aktivitas absensi hari ini.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="stat-card">
+          <p class="stat-label">Hadir Hari Ini</p>
+          <p class="stat-value text-brand-600" id="stat-hadir">–</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Sedang Izin Keluar</p>
+          <p class="stat-value text-amber-600" id="stat-izin">–</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Karyawan</p>
+          <p class="stat-value text-slate-700" id="stat-total">–</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <h2 class="font-semibold mb-3">Aktivitas Terbaru</h2>
+        <div id="dashboard-recent" class="divide-y divide-slate-100 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- ======================= FORM ABSENSI ======================= -->
+    <section id="tab-absensi" class="tab-section hidden">
+      <h1 class="text-2xl font-bold mb-1">Absen / Izin</h1>
+      <p class="text-slate-500 mb-6">Pilih nama, verifikasi PIN, lalu kirim absensi Anda.</p>
+
+      <form id="form-absensi" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-5">
+
+        <div>
+          <label class="form-label">Nama Karyawan</label>
+          <select id="input-nama" required class="form-input">
+            <option value="" disabled selected>Memuat daftar karyawan...</option>
+          </select>
+        </div>
+
+        <div id="pin-wrapper" class="hidden">
+          <label class="form-label">PIN Anda</label>
+          <div class="flex gap-2">
+            <input id="input-pin" type="password" inputmode="numeric" maxlength="8" required class="form-input" placeholder="Masukkan PIN rahasia Anda" />
+            <button type="button" id="btn-verify-pin" class="shrink-0 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-lg px-4">Verifikasi</button>
+          </div>
+          <p id="pin-feedback" class="hidden text-sm mt-2 rounded-lg px-3 py-2"></p>
+        </div>
+
+        <div id="jenis-wrapper" class="hidden">
+          <label class="form-label">Jenis Aksi</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-jenis="Masuk" class="jenis-btn">Absen Masuk</button>
+            <button type="button" data-jenis="Pulang" class="jenis-btn">Absen Pulang</button>
+            <button type="button" data-jenis="Izin Keluar" class="jenis-btn">Izin Keluar</button>
+          </div>
+        </div>
+
+        <div id="izin-wrapper" class="hidden space-y-4">
+          <div>
+            <label class="form-label">Durasi Izin</label>
+            <select id="input-durasi" class="form-input">
+              <option value="" disabled selected>Pilih durasi</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Alasan Izin</label>
+            <textarea id="input-alasan" rows="3" class="form-input" placeholder="Contoh: Keperluan bank, jemput anak, dll."></textarea>
+          </div>
+        </div>
+
+        <div id="lokasi-wrapper" class="hidden text-sm text-slate-500 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span id="lokasi-status">Mengambil lokasi GPS...</span>
+        </div>
+
+        <div id="form-feedback" class="hidden text-sm rounded-lg px-4 py-3"></div>
+
+        <button type="submit" id="btn-submit-absen" disabled class="w-full bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg py-3 transition">
+          Kirim Absensi
+        </button>
+      </form>
+    </section>
+
+    <!-- ======================= RIWAYAT ======================= -->
+    <section id="tab-riwayat" class="tab-section hidden">
+      <h1 class="text-2xl font-bold mb-1">Riwayat Absensi</h1>
+      <p class="text-slate-500 mb-6">Telusuri catatan absensi dan izin karyawan.</p>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+        <input id="filter-search" type="text" placeholder="Cari nama..." class="form-input md:col-span-2" />
+        <input id="filter-start" type="date" class="form-input" />
+        <input id="filter-end" type="date" class="form-input" />
+        <select id="filter-status" class="form-input">
+          <option value="">Semua Status</option>
+          <option value="Masuk">Masuk</option>
+          <option value="Pulang">Pulang</option>
+          <option value="Izin Keluar">Izin Keluar</option>
+        </select>
+      </div>
+      <div class="flex justify-end mb-3">
+        <button id="btn-filter" class="text-sm font-semibold text-brand-600 hover:text-brand-700">Terapkan Filter</button>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+              <th class="px-4 py-3 font-medium">Waktu</th>
+              <th class="px-4 py-3 font-medium">Nama</th>
+              <th class="px-4 py-3 font-medium">Jenis</th>
+              <th class="px-4 py-3 font-medium">Detail</th>
+              <th class="px-4 py-3 font-medium">Lokasi</th>
+            </tr>
+          </thead>
+          <tbody id="riwayat-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+        <p id="riwayat-empty" class="hidden text-center text-slate-400 py-8 text-sm">Tidak ada data ditemukan.</p>
+        <p id="riwayat-loading" class="text-center text-slate-400 py-8 text-sm">Memuat data...</p>
+      </div>
+    </section>
+
+    <!-- ======================= ADMIN ======================= -->
+    <section id="tab-admin" class="tab-section hidden">
+
+      <!-- Login form -->
+      <div id="admin-login-view">
+        <h1 class="text-2xl font-bold mb-1">Login Admin</h1>
+        <p class="text-slate-500 mb-6">Khusus supervisor. Masukkan kredensial Anda.</p>
+        <form id="form-admin-login" class="bg-white rounded-xl border border-slate-200 p-6 max-w-sm space-y-4">
+          <div>
+            <label class="form-label">Username</label>
+            <input id="admin-username" type="text" required class="form-input" />
+          </div>
+          <div>
+            <label class="form-label">Password</label>
+            <input id="admin-password" type="password" required class="form-input" />
+          </div>
+          <div id="admin-login-feedback" class="hidden text-sm rounded-lg px-4 py-3 bg-red-50 text-red-700"></div>
+          <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg py-3 transition">Masuk</button>
+        </form>
+      </div>
+
+      <!-- Admin panel -->
+      <div id="admin-panel-view" class="hidden">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold mb-1">Panel Admin</h1>
+            <p class="text-slate-500">Kelola pengaturan dan data karyawan.</p>
+          </div>
+          <button id="btn-admin-logout" class="text-sm font-semibold text-slate-500 hover:text-red-600">Keluar</button>
+        </div>
+
+        <div class="flex flex-wrap gap-1 mb-6 border-b border-slate-200" id="admin-subnav">
+          <button data-sub="shift" class="sub-nav-btn">Shift</button>
+          <button data-sub="izin" class="sub-nav-btn">Izin</button>
+          <button data-sub="karyawan" class="sub-nav-btn">Kelola Karyawan</button>
+          <button data-sub="ip" class="sub-nav-btn">Keamanan IP</button>
+          <button data-sub="broadcast" class="sub-nav-btn">Pengumuman</button>
+        </div>
+
+        <!-- Shift -->
+        <div id="admin-sub-shift" class="admin-sub-section">
+          <form id="form-shift" class="bg-white rounded-xl border border-slate-200 p-6 max-w-md space-y-4">
+            <h2 class="font-semibold">Pengaturan Jam Shift</h2>
+            <div>
+              <label class="form-label">Jam Masuk Standar</label>
+              <input id="shift-masuk" type="time" class="form-input" />
+            </div>
+            <div>
+              <label class="form-label">Jam Pulang Standar</label>
+              <input id="shift-pulang" type="time" class="form-input" />
+            </div>
+            <button type="submit" class="btn-admin-save">Simpan Pengaturan Shift</button>
+            <p class="save-feedback hidden"></p>
+          </form>
+        </div>
+
+        <!-- Izin -->
+        <div id="admin-sub-izin" class="admin-sub-section hidden">
+          <form id="form-izin" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-4">
+            <h2 class="font-semibold">Pengaturan Izin Keluar</h2>
+            <div>
+              <label class="form-label">Jatah Izin per Bulan</label>
+              <input id="izin-jatah" type="number" min="0" class="form-input" />
+            </div>
+            <div>
+              <label class="form-label">Pilihan Durasi Izin</label>
+              <div id="durasi-list" class="space-y-2"></div>
+              <button type="button" id="btn-add-durasi" class="text-sm font-semibold text-brand-600 mt-2">+ Tambah Durasi</button>
+            </div>
+            <button type="submit" class="btn-admin-save">Simpan Pengaturan Izin</button>
+            <p class="save-feedback hidden"></p>
+          </form>
+        </div>
+
+        <!-- Karyawan -->
+        <div id="admin-sub-karyawan" class="admin-sub-section hidden">
+          <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+            <h2 class="font-semibold mb-4">Tambah Karyawan Baru</h2>
+            <form id="form-tambah-karyawan" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+              <div>
+                <label class="form-label">Nama</label>
+                <input id="new-karyawan-nama" type="text" required class="form-input" />
+              </div>
+              <div>
+                <label class="form-label">PIN Awal</label>
+                <input id="new-karyawan-pin" type="text" required class="form-input" placeholder="Mis. 1234" />
+              </div>
+              <button type="submit" class="btn-admin-save">Tambah</button>
+            </form>
+            <p id="tambah-karyawan-feedback" class="save-feedback hidden mt-3"></p>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                  <th class="px-4 py-3 font-medium">ID</th>
+                  <th class="px-4 py-3 font-medium">Nama</th>
+                  <th class="px-4 py-3 font-medium">Status</th>
+                  <th class="px-4 py-3 font-medium text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="karyawan-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- IP -->
+        <div id="admin-sub-ip" class="admin-sub-section hidden">
+          <form id="form-ip" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-4">
+            <h2 class="font-semibold">Whitelist IP Address</h2>
+            <p class="text-sm text-slate-500">Kosongkan daftar untuk menonaktifkan pembatasan IP (semua lokasi diperbolehkan).</p>
+            <textarea id="ip-list" rows="5" class="form-input" placeholder="Satu IP per baris, contoh:&#10;110.138.100.1&#10;36.83.0.5"></textarea>
+            <button type="submit" class="btn-admin-save">Simpan Whitelist</button>
+            <p class="save-feedback hidden"></p>
+          </form>
+        </div>
+
+        <!-- Broadcast -->
+        <div id="admin-sub-broadcast" class="admin-sub-section hidden">
+          <form id="form-broadcast" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-4">
+            <h2 class="font-semibold">Pengumuman / Broadcast</h2>
+            <p class="text-sm text-slate-500">Pesan ini akan tampil di halaman depan seluruh karyawan.</p>
+            <textarea id="broadcast-text" rows="4" class="form-input" placeholder="Tulis pengumuman di sini..."></textarea>
+            <button type="submit" class="btn-admin-save">Kirim Pengumuman</button>
+            <p class="save-feedback hidden"></p>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="text-center text-xs text-slate-400 py-6">
+    AbsensiKita &middot; Terhubung dengan Google Sheets via Google Apps Script
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
