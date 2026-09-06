@@ -14,6 +14,18 @@
   --text-muted: #959aa5;
 }
 
+/* ---------- CANVAS BACKGROUND ANIMASI NAGA ---------- */
+#dragon-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* Klik tembus ke elemen di bawahnya */
+  z-index: 0;           /* Di belakang seluruh konten UI */
+  opacity: 0.25;        /* Transparansi lembut agar tidak mengganggu bacaan */
+}
+
 /* ---------- RESET & BACKGROUND DASAR ---------- */
 body, body.bg-slate-50 {
   background-color: var(--bg-light) !important;
