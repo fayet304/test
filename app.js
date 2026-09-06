@@ -34,7 +34,8 @@ const State = {
   lokasi: null,
   clientIp: null,
   admin: null, // { username, password } jika sedang login
-  durasiIzinDraft: []
+  durasiIzinDraft: [],
+  izinInterval: null
 };
 
 /* ------------------------------------------------------------------
@@ -167,11 +168,11 @@ function initFormAbsensi() {
     const matches = State.karyawan.filter(k => k.nama.toLowerCase().includes(q)).slice(0, 8);
     namaList.innerHTML = '';
     if (matches.length === 0) {
-      namaList.innerHTML = '<div class="nama-list-item text-slate-500">Tidak ditemukan</div>';
+      namaList.innerHTML = '<div class="p-2 text-slate-400 text-sm">Tidak ditemukan</div>';
     } else {
       matches.forEach(k => {
         const item = document.createElement('div');
-        item.className = 'nama-list-item';
+        item.className = 'p-2.5 hover:bg-slate-100 cursor-pointer text-sm font-medium transition';
         item.textContent = k.nama;
         item.addEventListener('click', () => {
           selectedId = k.id;
@@ -379,7 +380,6 @@ async function initIzinTimerFor(karyawan, pin) {
     izinFeedback.className = `text-sm rounded-lg px-4 py-3 ${success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`;
   }
 
-  // Cek status terkini (barangkali sebelumnya sudah Start tapi halaman di-refresh)
   try {
     const statusRes = await Api.get('getStatusIzin', { id: karyawan.id });
     if (statusRes.success && statusRes.data.aktif) {
@@ -483,8 +483,8 @@ async function loadIzinRanking() {
     }
     res.data.forEach(r => {
       const row = document.createElement('div');
-      row.className = 'ranking-item';
-      row.innerHTML = `<span>${escapeHtml(r.nama)}</span><span class="ranking-count">${r.count}x</span>`;
+      row.className = 'flex justify-between items-center py-2 px-3 text-sm';
+      row.innerHTML = `<span class="font-medium">${escapeHtml(r.nama)}</span><span class="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full text-xs">${r.count}x</span>`;
       list.appendChild(row);
     });
   } catch (err) {
@@ -500,8 +500,11 @@ function initAccordions() {
   document.querySelectorAll('.panel-header').forEach(header => {
     header.addEventListener('click', () => {
       const target = document.getElementById(header.dataset.target);
-      header.classList.toggle('collapsed');
-      target.classList.toggle('collapsed');
+      if (target) {
+        target.classList.toggle('hidden');
+        const chevron = header.querySelector('.chevron');
+        if (chevron) chevron.classList.toggle('rotate-180');
+      }
     });
   });
 }
@@ -547,7 +550,7 @@ async function loadRiwayat() {
       const tr = document.createElement('tr');
       const detail = r.jenis === 'Izin Keluar' ? `${escapeHtml(r.durasiLabel || '')} &middot; ${escapeHtml(r.alasan || '')}` : '-';
       const lokasi = r.lat && r.lng
-        ? `<a class="text-brand-600 hover:underline" target="_blank" rel="noopener" href="https://maps.google.com/?q=${r.lat},${r.lng}">Lihat peta</a>`
+        ? `<a class="text-blue-600 hover:underline" target="_blank" rel="noopener" href="https://maps.google.com/?q=${r.lat},${r.lng}">Lihat peta</a>`
         : '-';
       tr.innerHTML = `
         <td class="px-4 py-3 whitespace-nowrap">${formatDateTime(r.timestamp)}</td>
@@ -606,7 +609,6 @@ function initAdmin() {
       document.getElementById(`admin-sub-${btn.dataset.sub}`).classList.remove('hidden');
     });
   });
-  document.querySelector('.sub-nav-btn').classList.add('active');
 
   document.getElementById('form-shift').addEventListener('submit', async e => {
     e.preventDefault();
@@ -650,7 +652,7 @@ function initAdmin() {
     const res = await Api.post(payload);
     const feedback = document.getElementById('tambah-karyawan-feedback');
     feedback.textContent = res.success ? `Karyawan ditambahkan dengan ID ${res.data.id}.` : res.message;
-    feedback.className = `save-feedback mt-3 ${res.success ? 'success' : 'error'}`;
+    feedback.className = `save-feedback mt-3 ${res.success ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}`;
     if (res.success) {
       e.target.reset();
       loadKaryawanTable();
@@ -680,8 +682,11 @@ function initAdmin() {
 
 function showSaveFeedback(formEl, res) {
   const el = formEl.querySelector('.save-feedback');
-  el.textContent = res.success ? 'Perubahan berhasil disimpan.' : res.message;
-  el.className = `save-feedback ${res.success ? 'success' : 'error'}`;
+  if (el) {
+    el.textContent = res.success ? 'Perubahan berhasil disimpan.' : res.message;
+    el.className = `save-feedback text-sm mt-2 font-semibold ${res.success ? 'text-green-600' : 'text-red-600'}`;
+    el.classList.remove('hidden');
+  }
 }
 
 async function loadAdminData() {
@@ -711,13 +716,14 @@ function renderDurasiList() {
     const row = document.createElement('div');
     row.className = 'flex gap-2 items-center';
     row.innerHTML = `
-      <input type="text" value="${escapeAttr(d.label)}" placeholder="Label (mis. 1 Jam)" class="form-input durasi-label" />
-      <input type="number" value="${d.menit}" placeholder="Menit" class="form-input durasi-menit w-28" />
-      <button type="button" class="text-red-500 hover:text-red-700 px-2 durasi-remove">&times;</button>
+      <input type="text" value="${escapeAttr(d.label)}" placeholder="Label (mis. 1 Jam)" class="form-input p-2 rounded-lg border w-full text-sm" />
+      <input type="number" value="${d.menit}" placeholder="Menit" class="form-input p-2 rounded-lg border w-28 text-sm" />
+      <button type="button" class="text-red-500 hover:text-red-700 px-2 font-bold text-lg">&times;</button>
     `;
-    row.querySelector('.durasi-label').addEventListener('input', e => (State.durasiIzinDraft[i].label = e.target.value));
-    row.querySelector('.durasi-menit').addEventListener('input', e => (State.durasiIzinDraft[i].menit = Number(e.target.value)));
-    row.querySelector('.durasi-remove').addEventListener('click', () => {
+    const inputs = row.querySelectorAll('input');
+    inputs[0].addEventListener('input', e => (State.durasiIzinDraft[i].label = e.target.value));
+    inputs[1].addEventListener('input', e => (State.durasiIzinDraft[i].menit = Number(e.target.value)));
+    row.querySelector('button').addEventListener('click', () => {
       State.durasiIzinDraft.splice(i, 1);
       renderDurasiList();
     });
@@ -740,7 +746,7 @@ async function loadKaryawanTable() {
         <td class="px-4 py-3 font-medium">${escapeHtml(k.Nama)}</td>
         <td class="px-4 py-3"><span class="badge ${aktif ? 'badge-aktif' : 'badge-nonaktif'}">${aktif ? 'Aktif' : 'Nonaktif'}</span></td>
         <td class="px-4 py-3 text-right space-x-3 whitespace-nowrap">
-          <button class="text-sm font-semibold text-brand-600 hover:underline btn-reset-pin">Reset PIN</button>
+          <button class="text-sm font-semibold text-blue-600 hover:underline btn-reset-pin">Reset PIN</button>
           <button class="text-sm font-semibold text-slate-500 hover:underline btn-toggle-aktif">${aktif ? 'Nonaktifkan' : 'Aktifkan'}</button>
         </td>
       `;
@@ -771,12 +777,13 @@ async function toggleAktifKaryawan(id, aktif) {
  * ------------------------------------------------------------------ */
 function formatDateTime(iso) {
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
   return d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 function jenisBadge(jenis) {
   const map = { Masuk: 'badge-masuk', Pulang: 'badge-pulang', 'Izin Mulai': 'badge-izin', 'Izin Selesai': 'badge-izin', 'Izin Keluar': 'badge-izin' };
-  return `<span class="badge ${map[jenis] || 'badge-nonaktif'}">${escapeHtml(jenis)}</span>`;
+  return `<span class="badge ${map[jenis] || 'badge-pulang'}">${escapeHtml(jenis)}</span>`;
 }
 
 function escapeHtml(str) {
@@ -788,28 +795,89 @@ function escapeAttr(str) {
 }
 
 /* ------------------------------------------------------------------
- *  EFEK VISUAL: PARTIKEL NEON MENGAMBANG
+ *  EFEK VISUAL: ANIMASI NAGA (CANVAS BACKGROUND)
  * ------------------------------------------------------------------ */
-function initNeonParticles() {
-  const colors = ['#0091ff', '#5fd4ff', '#0047d6', '#ffd23f'];
-  const count = window.innerWidth < 640 ? 12 : 22;
-  for (let i = 0; i < count; i++) {
-    const p = document.createElement('div');
-    p.className = 'neon-particle';
-    const size = 2 + Math.random() * 4;
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    p.style.width = `${size}px`;
-    p.style.height = `${size}px`;
-    p.style.left = `${Math.random() * 100}vw`;
-    p.style.bottom = `-10px`;
-    p.style.background = color;
-    p.style.boxShadow = `0 0 ${size * 2}px ${color}`;
-    const duration = 12 + Math.random() * 14;
-    const delay = Math.random() * duration;
-    p.style.animationDuration = `${duration}s`;
-    p.style.animationDelay = `-${delay}s`;
-    document.body.appendChild(p);
+function initDragonCanvas() {
+  const canvas = document.getElementById('dragon-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const dragon = {
+    x: width / 2,
+    y: height / 2,
+    vx: 0,
+    vy: 0,
+    angle: 0,
+    segments: [],
+    numSegments: 25,
+    segmentLength: 14
+  };
+
+  for (let i = 0; i < dragon.numSegments; i++) {
+    dragon.segments.push({ x: dragon.x, y: dragon.y });
   }
+
+  let targetX = Math.random() * width;
+  let targetY = Math.random() * height;
+  let changeTargetCounter = 0;
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    changeTargetCounter++;
+    if (changeTargetCounter > 120 || Math.hypot(targetX - dragon.x, targetY - dragon.y) < 50) {
+      targetX = Math.random() * (width - 100) + 50;
+      targetY = Math.random() * (height - 100) + 50;
+      changeTargetCounter = 0;
+    }
+
+    const dx = targetX - dragon.x;
+    const dy = targetY - dragon.y;
+    const targetAngle = Math.atan2(dy, dx);
+
+    dragon.angle += (targetAngle - dragon.angle) * 0.03;
+    dragon.vx = Math.cos(dragon.angle) * 2;
+    dragon.vy = Math.sin(dragon.angle) * 2;
+
+    dragon.x += dragon.vx;
+    dragon.y += dragon.vy;
+
+    dragon.segments[0] = { x: dragon.x, y: dragon.y };
+
+    for (let i = 1; i < dragon.numSegments; i++) {
+      const prev = dragon.segments[i - 1];
+      const curr = dragon.segments[i];
+      const segDx = prev.x - curr.x;
+      const segDy = prev.y - curr.y;
+      const segAngle = Math.atan2(segDy, segDx);
+
+      curr.x = prev.x - Math.cos(segAngle) * dragon.segmentLength;
+      curr.y = prev.y - Math.sin(segAngle) * dragon.segmentLength;
+    }
+
+    // Gambar naga
+    for (let i = dragon.numSegments - 1; i >= 0; i--) {
+      const seg = dragon.segments[i];
+      const radius = i === 0 ? 12 : Math.max(3, 10 - i * 0.3);
+
+      ctx.beginPath();
+      ctx.arc(seg.x, seg.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = i === 0 ? '#3a9ce8' : `rgba(113, 169, 241, ${1 - i / dragon.numSegments})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
 }
 
 /* ------------------------------------------------------------------
@@ -817,20 +885,28 @@ function initNeonParticles() {
  * ------------------------------------------------------------------ */
 function fireConfetti() {
   const colors = ['#0091ff', '#5fd4ff', '#0047d6', '#ffd23f', '#4dffc3'];
-  const pieces = 60;
+  const pieces = 40;
   for (let i = 0; i < pieces; i++) {
     const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
+    piece.className = 'fixed z-50 pointer-events-none rounded-sm';
     const size = 6 + Math.random() * 6;
     piece.style.width = `${size}px`;
     piece.style.height = `${size * 0.4}px`;
     piece.style.left = `${Math.random() * 100}vw`;
+    piece.style.top = `-10px`;
     piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    
     const duration = 1.8 + Math.random() * 1.4;
-    piece.style.animationDuration = `${duration}s`;
-    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    piece.style.transition = `transform ${duration}s linear, top ${duration}s linear, opacity ${duration}s linear`;
     document.body.appendChild(piece);
-    setTimeout(() => piece.remove(), duration * 1000 + 100);
+
+    setTimeout(() => {
+      piece.style.top = `${100 + Math.random() * 20}vh`;
+      piece.style.transform = `rotate(${Math.random() * 720}deg)`;
+      piece.style.opacity = '0';
+    }, 20);
+
+    setTimeout(() => piece.remove(), duration * 1000 + 200);
   }
 }
 
@@ -839,15 +915,13 @@ function fireConfetti() {
  * ------------------------------------------------------------------ */
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
+  initAccordions();
   initFormAbsensi();
   initRiwayat();
   initAdmin();
-  initNeonParticles();
-  initAccordions();
-
+  initDragonCanvas();
+  
   loadKaryawanDropdown();
   loadPengaturanPublik();
   loadDashboard();
-
-  switchTab('dashboard');
 });
