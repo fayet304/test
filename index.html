@@ -1,48 +1,54 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Absensi Karyawan</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          brand: {
-            50: '#f0fdfa',
-            100: '#ccfbf1',
-            200: '#99f6e4',
-            300: '#5eead4',
-            400: '#2dd4bf',
-            500: '#14b8a6',
-            600: '#0d9488',
-            700: '#0f766e',
-            800: '#115e59',
-            900: '#134e4a'
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Absensi Karyawan</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0f0fe',
+              200: '#bae0fd',
+              300: '#71a9f1',
+              400: '#3a9ce8',
+              500: '#2a72b8',
+              600: '#1d5a96',
+              700: '#184878',
+              800: '#163e65',
+              900: '#173554'
+            },
+            ink: '#333333'
           },
-          ink: '#0f172a'
-        },
-        fontFamily: {
-          sans: ['Inter', 'system-ui', 'sans-serif']
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
         }
       }
-    }
-  };
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+    };
+  </script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-slate-50 text-ink font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-ink font-sans min-h-screen flex flex-col relative">
+
+  <!-- ======================= CANVAS BACKGROUND ANIMASI NAGA ======================= -->
+  <canvas id="dragon-canvas"></canvas>
 
   <!-- ======================= HEADER / NAV ======================= -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
       <div class="flex items-center gap-2">
-        <div class="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold">A</div>
-        <span class="font-bold text-lg tracking-tight">Absensi<span class="text-brand-600">Kita</span></span>
+        <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow">A</div>
+        <span class="font-bold text-lg tracking-tight">Absensi<span class="text-blue-500">Kita</span></span>
       </div>
       <nav class="hidden md:flex items-center gap-1" id="nav-desktop">
         <button data-tab="dashboard" class="nav-btn">Dashboard</button>
@@ -50,8 +56,10 @@
         <button data-tab="riwayat" class="nav-btn">Riwayat</button>
         <button data-tab="admin" class="nav-btn">Admin</button>
       </nav>
-      <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-slate-100">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <button id="menu-toggle" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
       </button>
     </div>
     <nav id="nav-mobile" class="md:hidden hidden flex-col border-t border-slate-200 px-4 py-2 gap-1">
@@ -65,11 +73,14 @@
   <!-- ======================= ANNOUNCEMENT BAR ======================= -->
   <div id="announcement-bar" class="hidden bg-amber-50 border-b border-amber-200 text-amber-900 text-sm">
     <div class="max-w-6xl mx-auto px-4 py-2 flex items-start gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+      </svg>
       <p id="announcement-text" class="font-medium"></p>
     </div>
   </div>
 
+  <!-- ======================= UTAMA ======================= -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
 
     <!-- ======================= DASHBOARD ======================= -->
@@ -78,15 +89,15 @@
       <p class="text-slate-500 mb-6">Ringkasan aktivitas absensi hari ini.</p>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="stat-card">
+        <div class="stat-card p-5">
           <p class="stat-label">Hadir Hari Ini</p>
-          <p class="stat-value text-brand-600" id="stat-hadir">–</p>
+          <p class="stat-value text-blue-600" id="stat-hadir">–</p>
         </div>
-        <div class="stat-card">
+        <div class="stat-card p-5">
           <p class="stat-label">Sedang Izin Keluar</p>
           <p class="stat-value text-amber-600" id="stat-izin">–</p>
         </div>
-        <div class="stat-card">
+        <div class="stat-card p-5">
           <p class="stat-label">Total Karyawan</p>
           <p class="stat-value text-slate-700" id="stat-total">–</p>
         </div>
@@ -107,12 +118,14 @@
 
         <!-- Ranking Izin -->
         <div class="panel-card lg:col-span-1">
-          <button type="button" class="panel-header" data-target="panel-ranking-content">
+          <button type="button" class="panel-header w-full text-left flex justify-between items-center" data-target="panel-ranking-content">
             <span class="panel-header-title">📋 Izin Bulan Ini</span>
-            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            <svg class="chevron w-5 h-5 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
           </button>
           <div id="panel-ranking-content" class="panel-content py-1">
-            <div id="izin-ranking-list" class="divide-y divide-white/5"></div>
+            <div id="izin-ranking-list" class="divide-y divide-slate-100"></div>
             <p id="izin-ranking-empty" class="hidden text-slate-400 text-sm py-6 text-center">Belum ada data izin bulan ini.</p>
             <p id="izin-ranking-loading" class="text-slate-400 text-sm py-6 text-center">Memuat...</p>
           </div>
@@ -122,39 +135,44 @@
         <div class="lg:col-span-2 space-y-6">
 
           <div class="panel-card">
-            <button type="button" class="panel-header" data-target="panel-form-content">
+            <button type="button" class="panel-header w-full text-left flex justify-between items-center" data-target="panel-form-content">
               <span class="panel-header-title">📝 Form Presensi</span>
-              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              <svg class="chevron w-5 h-5 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
             </button>
             <div id="panel-form-content" class="panel-content">
               <form id="form-absensi" class="p-6 space-y-5">
 
                 <div>
-                  <label class="form-label">Cari Nama</label>
-                  <input id="input-nama-search" type="text" class="form-input" placeholder="Ketik nama..." autocomplete="off" />
-                  <div id="nama-list" class="nama-list hidden"></div>
-                  <p id="nama-selected" class="hidden text-sm mt-2 font-semibold" style="color: var(--neon-blue);"></p>
+                  <label class="form-label block text-sm font-semibold mb-1">Cari Nama</label>
+                  <input id="input-nama-search" type="text" class="form-input w-full p-2.5 rounded-lg border" placeholder="Ketik nama..." autocomplete="off" />
+                  <div id="nama-list" class="nama-list hidden mt-1 border rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto"></div>
+                  <p id="nama-selected" class="hidden text-sm mt-2 font-semibold text-blue-600"></p>
                 </div>
 
                 <div id="pin-wrapper" class="hidden">
-                  <label class="form-label">PIN Anda</label>
+                  <label class="form-label block text-sm font-semibold mb-1">PIN Anda</label>
                   <div class="flex gap-2">
-                    <input id="input-pin" type="password" inputmode="numeric" maxlength="8" required class="form-input" placeholder="Masukkan PIN rahasia Anda" />
+                    <input id="input-pin" type="password" inputmode="numeric" maxlength="8" required class="form-input w-full p-2.5 rounded-lg border" placeholder="Masukkan PIN rahasia Anda" />
                     <button type="button" id="btn-verify-pin" class="shrink-0 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-lg px-4">Verifikasi</button>
                   </div>
                   <p id="pin-feedback" class="hidden text-sm mt-2 rounded-lg px-3 py-2"></p>
                 </div>
 
                 <div id="jenis-wrapper" class="hidden">
-                  <label class="form-label">Status</label>
+                  <label class="form-label block text-sm font-semibold mb-1">Status</label>
                   <div class="grid grid-cols-2 gap-2">
-                    <button type="button" data-jenis="Masuk" class="jenis-btn">Masuk Kerja</button>
-                    <button type="button" data-jenis="Pulang" class="jenis-btn">Pulang Kerja</button>
+                    <button type="button" data-jenis="Masuk" class="jenis-btn py-2.5 px-4">Masuk Kerja</button>
+                    <button type="button" data-jenis="Pulang" class="jenis-btn py-2.5 px-4">Pulang Kerja</button>
                   </div>
                 </div>
 
                 <div id="lokasi-wrapper" class="hidden text-sm text-slate-500 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
                   <span id="lokasi-status">Mengambil lokasi GPS...</span>
                 </div>
 
@@ -168,27 +186,29 @@
           </div>
 
           <div class="panel-card">
-            <button type="button" class="panel-header" data-target="panel-izin-content">
+            <button type="button" class="panel-header w-full text-left flex justify-between items-center" data-target="panel-izin-content">
               <span class="panel-header-title">⏱ Menu Izin Keluar (Timer)</span>
-              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              <svg class="chevron w-5 h-5 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
             </button>
             <div id="panel-izin-content" class="panel-content p-6 space-y-4">
               <p id="izin-timer-hint" class="text-sm text-slate-400">Verifikasi PIN Anda di Form Presensi di atas terlebih dahulu untuk menggunakan menu ini.</p>
               <div id="izin-timer-body" class="hidden space-y-4">
                 <div>
-                  <label class="form-label">Keperluan</label>
-                  <select id="input-keperluan" class="form-input">
+                  <label class="form-label block text-sm font-semibold mb-1">Keperluan</label>
+                  <select id="input-keperluan" class="form-input w-full p-2.5 rounded-lg border">
                     <option value="" disabled selected>Pilih keperluan</option>
                   </select>
                 </div>
                 <div id="izin-timer-display" class="hidden text-center py-2">
                   <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Sedang Izin Keluar</p>
-                  <p id="izin-timer-clock" class="text-3xl font-extrabold" style="color: var(--neon-blue);">00:00</p>
+                  <p id="izin-timer-clock" class="text-3xl font-extrabold text-blue-600">00:00</p>
                   <p id="izin-timer-keperluan" class="text-sm text-slate-400 mt-1"></p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                  <button type="button" id="btn-izin-start" class="btn-start">Start</button>
-                  <button type="button" id="btn-izin-stop" class="btn-stop" disabled>Stop</button>
+                  <button type="button" id="btn-izin-start" class="btn-start py-2.5 rounded-lg font-semibold text-white">Start</button>
+                  <button type="button" id="btn-izin-stop" class="btn-stop py-2.5 rounded-lg font-semibold text-white" disabled>Stop</button>
                 </div>
                 <p id="izin-feedback" class="hidden text-sm rounded-lg px-4 py-3"></p>
               </div>
@@ -205,10 +225,10 @@
       <p class="text-slate-500 mb-6">Telusuri catatan absensi dan izin karyawan.</p>
 
       <div class="bg-white rounded-xl border border-slate-200 p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
-        <input id="filter-search" type="text" placeholder="Cari nama..." class="form-input md:col-span-2" />
-        <input id="filter-start" type="date" class="form-input" />
-        <input id="filter-end" type="date" class="form-input" />
-        <select id="filter-status" class="form-input">
+        <input id="filter-search" type="text" placeholder="Cari nama..." class="form-input md:col-span-2 p-2.5 rounded-lg border" />
+        <input id="filter-start" type="date" class="form-input p-2.5 rounded-lg border" />
+        <input id="filter-end" type="date" class="form-input p-2.5 rounded-lg border" />
+        <select id="filter-status" class="form-input p-2.5 rounded-lg border">
           <option value="">Semua Status</option>
           <option value="Masuk">Masuk</option>
           <option value="Pulang">Pulang</option>
@@ -216,7 +236,7 @@
         </select>
       </div>
       <div class="flex justify-end mb-3">
-        <button id="btn-filter" class="text-sm font-semibold text-brand-600 hover:text-brand-700">Terapkan Filter</button>
+        <button id="btn-filter" class="text-sm font-semibold text-blue-600 hover:text-blue-700">Terapkan Filter</button>
       </div>
 
       <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto">
@@ -246,15 +266,15 @@
         <p class="text-slate-500 mb-6">Khusus supervisor. Masukkan kredensial Anda.</p>
         <form id="form-admin-login" class="bg-white rounded-xl border border-slate-200 p-6 max-w-sm space-y-4">
           <div>
-            <label class="form-label">Username</label>
-            <input id="admin-username" type="text" required class="form-input" />
+            <label class="form-label block text-sm font-semibold mb-1">Username</label>
+            <input id="admin-username" type="text" required class="form-input w-full p-2.5 rounded-lg border" />
           </div>
           <div>
-            <label class="form-label">Password</label>
-            <input id="admin-password" type="password" required class="form-input" />
+            <label class="form-label block text-sm font-semibold mb-1">Password</label>
+            <input id="admin-password" type="password" required class="form-input w-full p-2.5 rounded-lg border" />
           </div>
           <div id="admin-login-feedback" class="hidden text-sm rounded-lg px-4 py-3 bg-red-50 text-red-700"></div>
-          <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg py-3 transition">Masuk</button>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-3 transition">Masuk</button>
         </form>
       </div>
 
@@ -269,11 +289,11 @@
         </div>
 
         <div class="flex flex-wrap gap-1 mb-6 border-b border-slate-200" id="admin-subnav">
-          <button data-sub="shift" class="sub-nav-btn">Shift</button>
-          <button data-sub="izin" class="sub-nav-btn">Izin</button>
-          <button data-sub="karyawan" class="sub-nav-btn">Kelola Karyawan</button>
-          <button data-sub="ip" class="sub-nav-btn">Keamanan IP</button>
-          <button data-sub="broadcast" class="sub-nav-btn">Pengumuman</button>
+          <button data-sub="shift" class="sub-nav-btn px-4 py-2 font-medium text-sm">Shift</button>
+          <button data-sub="izin" class="sub-nav-btn px-4 py-2 font-medium text-sm">Izin</button>
+          <button data-sub="karyawan" class="sub-nav-btn px-4 py-2 font-medium text-sm">Kelola Karyawan</button>
+          <button data-sub="ip" class="sub-nav-btn px-4 py-2 font-medium text-sm">Keamanan IP</button>
+          <button data-sub="broadcast" class="sub-nav-btn px-4 py-2 font-medium text-sm">Pengumuman</button>
         </div>
 
         <!-- Shift -->
@@ -281,14 +301,14 @@
           <form id="form-shift" class="bg-white rounded-xl border border-slate-200 p-6 max-w-md space-y-4">
             <h2 class="font-semibold">Pengaturan Jam Shift</h2>
             <div>
-              <label class="form-label">Jam Masuk Standar</label>
-              <input id="shift-masuk" type="time" class="form-input" />
+              <label class="form-label block text-sm font-semibold mb-1">Jam Masuk Standar</label>
+              <input id="shift-masuk" type="time" class="form-input w-full p-2.5 rounded-lg border" />
             </div>
             <div>
-              <label class="form-label">Jam Pulang Standar</label>
-              <input id="shift-pulang" type="time" class="form-input" />
+              <label class="form-label block text-sm font-semibold mb-1">Jam Pulang Standar</label>
+              <input id="shift-pulang" type="time" class="form-input w-full p-2.5 rounded-lg border" />
             </div>
-            <button type="submit" class="btn-admin-save">Simpan Pengaturan Shift</button>
+            <button type="submit" class="btn-admin-save py-2.5 px-4 rounded-lg text-white font-semibold">Simpan Pengaturan Shift</button>
             <p class="save-feedback hidden"></p>
           </form>
         </div>
@@ -298,15 +318,15 @@
           <form id="form-izin" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-4">
             <h2 class="font-semibold">Pengaturan Izin Keluar</h2>
             <div>
-              <label class="form-label">Jatah Izin per Bulan</label>
-              <input id="izin-jatah" type="number" min="0" class="form-input" />
+              <label class="form-label block text-sm font-semibold mb-1">Jatah Izin per Bulan</label>
+              <input id="izin-jatah" type="number" min="0" class="form-input w-full p-2.5 rounded-lg border" />
             </div>
             <div>
-              <label class="form-label">Pilihan Durasi Izin</label>
+              <label class="form-label block text-sm font-semibold mb-1">Pilihan Durasi Izin</label>
               <div id="durasi-list" class="space-y-2"></div>
-              <button type="button" id="btn-add-durasi" class="text-sm font-semibold text-brand-600 mt-2">+ Tambah Durasi</button>
+              <button type="button" id="btn-add-durasi" class="text-sm font-semibold text-blue-600 mt-2">+ Tambah Durasi</button>
             </div>
-            <button type="submit" class="btn-admin-save">Simpan Pengaturan Izin</button>
+            <button type="submit" class="btn-admin-save py-2.5 px-4 rounded-lg text-white font-semibold">Simpan Pengaturan Izin</button>
             <p class="save-feedback hidden"></p>
           </form>
         </div>
@@ -317,14 +337,14 @@
             <h2 class="font-semibold mb-4">Tambah Karyawan Baru</h2>
             <form id="form-tambah-karyawan" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
               <div>
-                <label class="form-label">Nama</label>
-                <input id="new-karyawan-nama" type="text" required class="form-input" />
+                <label class="form-label block text-sm font-semibold mb-1">Nama</label>
+                <input id="new-karyawan-nama" type="text" required class="form-input w-full p-2.5 rounded-lg border" />
               </div>
               <div>
-                <label class="form-label">PIN Awal</label>
-                <input id="new-karyawan-pin" type="text" required class="form-input" placeholder="Mis. 1234" />
+                <label class="form-label block text-sm font-semibold mb-1">PIN Awal</label>
+                <input id="new-karyawan-pin" type="text" required class="form-input w-full p-2.5 rounded-lg border" placeholder="Mis. 1234" />
               </div>
-              <button type="submit" class="btn-admin-save">Tambah</button>
+              <button type="submit" class="btn-admin-save py-2.5 px-4 rounded-lg text-white font-semibold">Tambah</button>
             </form>
             <p id="tambah-karyawan-feedback" class="save-feedback hidden mt-3"></p>
           </div>
@@ -349,8 +369,8 @@
           <form id="form-ip" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-4">
             <h2 class="font-semibold">Whitelist IP Address</h2>
             <p class="text-sm text-slate-500">Kosongkan daftar untuk menonaktifkan pembatasan IP (semua lokasi diperbolehkan).</p>
-            <textarea id="ip-list" rows="5" class="form-input" placeholder="Satu IP per baris, contoh:&#10;110.138.100.1&#10;36.83.0.5"></textarea>
-            <button type="submit" class="btn-admin-save">Simpan Whitelist</button>
+            <textarea id="ip-list" rows="5" class="form-input w-full p-2.5 rounded-lg border" placeholder="Satu IP per baris, contoh:&#10;110.138.100.1&#10;36.83.0.5"></textarea>
+            <button type="submit" class="btn-admin-save py-2.5 px-4 rounded-lg text-white font-semibold">Simpan Whitelist</button>
             <p class="save-feedback hidden"></p>
           </form>
         </div>
@@ -360,8 +380,8 @@
           <form id="form-broadcast" class="bg-white rounded-xl border border-slate-200 p-6 max-w-lg space-y-4">
             <h2 class="font-semibold">Pengumuman / Broadcast</h2>
             <p class="text-sm text-slate-500">Pesan ini akan tampil di halaman depan seluruh karyawan.</p>
-            <textarea id="broadcast-text" rows="4" class="form-input" placeholder="Tulis pengumuman di sini..."></textarea>
-            <button type="submit" class="btn-admin-save">Kirim Pengumuman</button>
+            <textarea id="broadcast-text" rows="4" class="form-input w-full p-2.5 rounded-lg border" placeholder="Tulis pengumuman di sini..."></textarea>
+            <button type="submit" class="btn-admin-save py-2.5 px-4 rounded-lg text-white font-semibold">Kirim Pengumuman</button>
             <p class="save-feedback hidden"></p>
           </form>
         </div>
@@ -371,7 +391,7 @@
 
   </main>
 
-  <footer class="text-center text-xs text-slate-400 py-6">
+  <footer class="text-center text-xs text-slate-400 py-6 relative z-10">
     AbsensiKita &middot; Terhubung dengan Google Sheets via Google Apps Script
   </footer>
 
