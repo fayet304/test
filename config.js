@@ -21,7 +21,7 @@
 
 const JLG_CONFIG = {
   // Ganti dengan URL Web App Google Apps Script Anda, contoh:
-  // "https://script.google.com/macros/s/AKfycbxXXXXXXXXXXXXXXXXXX/exec"
+  // "https://script.google.com/macros/s/AKfycbxf8vXqrgyDzH7g_nuAOTqV5zdZLHUiJ4muSZvv_xcOHrUPBEytRmzcnm_mDpdF2OslRQ/exec"
   GAS_URL: "",
 
   // Nama perusahaan yang tampil di header/judul (opsional, bisa dikustom)
