@@ -3,11 +3,9 @@
  *  APLIKASI ABSENSI KARYAWAN - BACKEND (Google Apps Script)
  * ============================================================
  * Sheet yang dibutuhkan (dibuat otomatis oleh initSetup()):
- *   1. Karyawan   -> ID | Nama | PIN | Aktif | TanggalDaftar
- *   2. Absensi    -> Timestamp | ID | Nama | Jenis | DurasiLabel | DurasiMenit | Alasan | Latitude | Longitude | IP | Status
+ *   1. Karyawan  -> ID | Nama | PIN | Aktif | TanggalDaftar
+ *   2. Absensi   -> Timestamp | ID | Nama | Jenis | DurasiLabel | DurasiMenit | Alasan | Latitude | Longitude | IP | Status
  *   3. Pengaturan -> Key | Value
- *
- * Cara pakai singkat ada di README.md
  * ============================================================
  */
 
@@ -16,7 +14,7 @@ const SHEET_ABSENSI = 'Absensi';
 const SHEET_PENGATURAN = 'Pengaturan';
 
 /* ------------------------------------------------------------------
- *  SETUP AWAL (jalankan sekali manual dari editor Apps Script)
+ *  SETUP AWAL
  * ------------------------------------------------------------------ */
 function initSetup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -39,7 +37,7 @@ function initSetup() {
   const defaults = [
     ['jamMasuk', '08:00'],
     ['jamPulang', '17:00'],
-    ['durasiIzin', JSON.stringify([{ label: '30 Menit', menit: 30 }, { label: '1 Jam', menit: 60 }, { label: '2 Jam', menit: 120 }])],
+    ['durasiIzin', JSON.stringify([{ label: 'Keperluan Kantor', menit: 60 }, { label: 'Keperluan Pribadi', menit: 30 }, { label: 'Makan/Istirahat', menit: 45 }])],
     ['jatahIzinBulanan', '3'],
     ['ipWhitelist', JSON.stringify([])],
     ['pengumuman', 'Selamat datang di Aplikasi Absensi Karyawan!'],
@@ -79,6 +77,7 @@ function fail_(message) {
 
 function sheetToObjects_(sh) {
   const values = sh.getDataRange().getValues();
+  if (values.length <= 1) return [];
   const headers = values.shift();
   return values
     .filter(row => row.join('') !== '')
@@ -122,7 +121,7 @@ function isSameDay_(date) {
 }
 
 /* ------------------------------------------------------------------
- *  ENTRY POINTS
+ *  ENTRY POINTS (GET & POST)
  * ------------------------------------------------------------------ */
 function doGet(e) {
   try {
@@ -136,6 +135,10 @@ function doGet(e) {
         return ok_(getRiwayat_(e.parameter));
       case 'getPengaturanPublik':
         return ok_(getPengaturanPublik_());
+      case 'getStatusIzin':
+        return ok_(getStatusIzin_(e.parameter.id));
+      case 'getIzinRanking':
+        return ok_(getIzinRanking_());
       default:
         return fail_('Action tidak dikenali: ' + action);
     }
@@ -153,6 +156,10 @@ function doPost(e) {
         return verifyPin_(body);
       case 'absen':
         return absen_(body);
+      case 'izinMulai':
+        return izinMulai_(body);
+      case 'izinSelesai':
+        return izinSelesai_(body);
       case 'adminLogin':
         return adminLogin_(body);
       case 'adminGetKaryawan':
@@ -201,7 +208,7 @@ function adminOnly_(body, fn) {
 }
 
 /* ------------------------------------------------------------------
- *  KARYAWAN
+ *  LOGIKA KARYAWAN
  * ------------------------------------------------------------------ */
 function getKaryawanPublic_() {
   return sheetToObjects_(sheet_(SHEET_KARYAWAN))
@@ -248,7 +255,7 @@ function resetPin_(body) {
 }
 
 /* ------------------------------------------------------------------
- *  ABSENSI / IZIN
+ *  LOGIKA ABSENSI & IZIN TIMER
  * ------------------------------------------------------------------ */
 function verifyPin_(body) {
   const shK = sheet_(SHEET_KARYAWAN);
@@ -260,6 +267,14 @@ function verifyPin_(body) {
   return ok_({ valid: true, nama: nama });
 }
 
+function checkIpWhitelist_(ip) {
+  const settings = getSettings_();
+  const whitelist = JSON.parse(settings.ipWhitelist || '[]');
+  if (whitelist.length > 0 && ip && whitelist.indexOf(ip) === -1) {
+    throw new Error('Absen ditolak: IP Address (' + ip + ') tidak terdaftar di whitelist kantor.');
+  }
+}
+
 function absen_(body) {
   const shK = sheet_(SHEET_KARYAWAN);
   const found = findKaryawanById_(shK, body.id);
@@ -269,30 +284,17 @@ function absen_(body) {
   if (aktif !== true && aktif !== 'TRUE' && aktif !== 'true') return fail_('Karyawan ini tidak aktif.');
   if (String(pin) !== String(body.pin)) return fail_('PIN salah.');
 
-  // Cek whitelist IP jika daftar tidak kosong
-  const settings = getSettings_();
-  const whitelist = JSON.parse(settings.ipWhitelist || '[]');
-  if (whitelist.length > 0 && body.ip && whitelist.indexOf(body.ip) === -1) {
-    return fail_('Absen ditolak: IP Address (' + body.ip + ') tidak terdaftar di whitelist kantor.');
-  }
+  checkIpWhitelist_(body.ip);
 
   const shA = sheet_(SHEET_ABSENSI);
-  let durasiLabel = '';
-  let durasiMenit = '';
-  if (body.jenis === 'Izin Keluar') {
-    if (!body.durasiLabel || !body.alasan) return fail_('Durasi dan alasan izin wajib diisi.');
-    durasiLabel = body.durasiLabel;
-    durasiMenit = body.durasiMenit;
-  }
-
   shA.appendRow([
     new Date(),
     id,
     nama,
     body.jenis,
-    durasiLabel,
-    durasiMenit,
-    body.alasan || '',
+    '',
+    '',
+    '',
     body.lat || '',
     body.lng || '',
     body.ip || '',
@@ -302,8 +304,100 @@ function absen_(body) {
   return ok_({ nama: nama, jenis: body.jenis, waktu: new Date().toISOString() });
 }
 
+function getStatusIzin_(id) {
+  const rows = sheetToObjects_(sheet_(SHEET_ABSENSI));
+  const lastIzin = rows
+    .filter(r => String(r.ID) === String(id) && (r.Jenis === 'Izin Mulai' || r.Jenis === 'Izin Selesai'))
+    .pop();
+
+  if (lastIzin && lastIzin.Jenis === 'Izin Mulai') {
+    return {
+      aktif: true,
+      keperluan: lastIzin.Alasan,
+      mulaiWaktu: new Date(lastIzin.Timestamp).toISOString()
+    };
+  }
+  return { aktif: false };
+}
+
+function izinMulai_(body) {
+  const shK = sheet_(SHEET_KARYAWAN);
+  const found = findKaryawanById_(shK, body.id);
+  if (!found) return fail_('Karyawan tidak ditemukan.');
+
+  const [id, nama, pin, aktif] = found.row;
+  if (aktif !== true && aktif !== 'TRUE' && aktif !== 'true') return fail_('Karyawan ini tidak aktif.');
+  if (String(pin) !== String(body.pin)) return fail_('PIN salah.');
+
+  checkIpWhitelist_(body.ip);
+
+  const status = getStatusIzin_(id);
+  if (status.aktif) return fail_('Selesaikan izin keluar Anda yang sedang berlangsung terlebih dahulu.');
+
+  const now = new Date();
+  const shA = sheet_(SHEET_ABSENSI);
+  shA.appendRow([
+    now,
+    id,
+    nama,
+    'Izin Mulai',
+    '',
+    '',
+    body.keperluan || 'Izin Keluar',
+    body.lat || '',
+    body.lng || '',
+    body.ip || '',
+    'Berlangsung'
+  ]);
+
+  return ok_({ mulaiWaktu: now.toISOString() });
+}
+
+function izinSelesai_(body) {
+  const shK = sheet_(SHEET_KARYAWAN);
+  const found = findKaryawanById_(shK, body.id);
+  if (!found) return fail_('Karyawan tidak ditemukan.');
+
+  const [id, nama, pin, aktif] = found.row;
+  if (aktif !== true && aktif !== 'TRUE' && aktif !== 'true') return fail_('Karyawan ini tidak aktif.');
+  if (String(pin) !== String(body.pin)) return fail_('PIN salah.');
+
+  checkIpWhitelist_(body.ip);
+
+  const rows = sheetToObjects_(sheet_(SHEET_ABSENSI));
+  const lastMulai = rows
+    .filter(r => String(r.ID) === String(id) && r.Jenis === 'Izin Mulai')
+    .pop();
+
+  if (!lastMulai) return fail_('Tidak ada sesi izin keluar yang aktif.');
+
+  const now = new Date();
+  const diffMs = now.getTime() - new Date(lastMulai.Timestamp).getTime();
+  const totalMenit = Math.max(1, Math.round(diffMs / 60000));
+  const label = totalMenit >= 60 
+    ? Math.floor(totalMenit / 60) + ' Jam ' + (totalMenit % 60) + ' Mnt'
+    : totalMenit + ' Mnt';
+
+  const shA = sheet_(SHEET_ABSENSI);
+  shA.appendRow([
+    now,
+    id,
+    nama,
+    'Izin Selesai',
+    label,
+    totalMenit,
+    lastMulai.Alasan,
+    body.lat || '',
+    body.lng || '',
+    body.ip || '',
+    'Selesai'
+  ]);
+
+  return ok_({ durasiLabel: label, durasiMenit: totalMenit });
+}
+
 /* ------------------------------------------------------------------
- *  DASHBOARD
+ *  LOGIKA DASHBOARD & RANKING
  * ------------------------------------------------------------------ */
 function getDashboard_() {
   const karyawan = sheetToObjects_(sheet_(SHEET_KARYAWAN));
@@ -313,23 +407,20 @@ function getDashboard_() {
 
   const masukHariIni = {};
   const pulangHariIni = {};
-  let izinAktif = 0;
-  const now = new Date();
+  const izinState = {};
 
   absensi.forEach(a => {
     if (a.Jenis === 'Masuk') masukHariIni[a.ID] = true;
     if (a.Jenis === 'Pulang') pulangHariIni[a.ID] = true;
-    if (a.Jenis === 'Izin Keluar') {
-      const mulai = new Date(a.Timestamp);
-      const selesai = new Date(mulai.getTime() + Number(a.DurasiMenit || 0) * 60000);
-      if (now >= mulai && now <= selesai) izinAktif++;
-    }
+    if (a.Jenis === 'Izin Mulai') izinState[a.ID] = true;
+    if (a.Jenis === 'Izin Selesai') izinState[a.ID] = false;
   });
 
-  const hadirHariIni = Object.keys(masukHariIni).filter(id => !pulangHariIni[id]).length + Object.keys(pulangHariIni).length;
+  const izinAktif = Object.keys(izinState).filter(id => izinState[id]).length;
+  const hadirHariIni = Object.keys(masukHariIni).length;
 
   return {
-    hadirHariIni: Object.keys(masukHariIni).length,
+    hadirHariIni: hadirHariIni,
     sudahPulang: Object.keys(pulangHariIni).length,
     izinAktif: izinAktif,
     totalKaryawan: totalKaryawan,
@@ -337,8 +428,34 @@ function getDashboard_() {
   };
 }
 
+function getIzinRanking_() {
+  const rows = sheetToObjects_(sheet_(SHEET_ABSENSI));
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const counts = {};
+
+  rows.forEach(r => {
+    if (r.Jenis === 'Izin Selesai' || r.Jenis === 'Izin Keluar') {
+      const d = new Date(r.Timestamp);
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        counts[r.Nama] = (counts[r.Nama] || 0) + 1;
+      }
+    }
+  });
+
+  const result = Object.keys(counts).map(nama => ({
+    nama: nama,
+    count: counts[nama]
+  }));
+
+  result.sort((a, b) => b.count - a.count);
+  return result;
+}
+
 /* ------------------------------------------------------------------
- *  RIWAYAT (dengan filter)
+ *  LOGIKA RIWAYAT
  * ------------------------------------------------------------------ */
 function getRiwayat_(params) {
   let rows = sheetToObjects_(sheet_(SHEET_ABSENSI));
@@ -375,7 +492,7 @@ function getRiwayat_(params) {
 }
 
 /* ------------------------------------------------------------------
- *  PENGATURAN (publik - dipakai form absensi)
+ *  PENGATURAN & ADMIN
  * ------------------------------------------------------------------ */
 function getPengaturanPublik_() {
   const s = getSettings_();
@@ -388,9 +505,6 @@ function getPengaturanPublik_() {
   };
 }
 
-/* ------------------------------------------------------------------
- *  Login admin
- * ------------------------------------------------------------------ */
 function adminLogin_(body) {
   if (isAdmin_(body.username, body.password)) return ok_({ login: true });
   return fail_('Username atau password salah.');
