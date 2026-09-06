@@ -1,298 +1,167 @@
-/* ============================================================
-   JL GROUP — Employee Management System
-   Custom styling: animated gradient, glassmorphism, keyframes
-   ============================================================ */
+/* ============================================================ */
+/* THEMA WARNA & BACKGROUND ZEUS (BIRU - HITAM GLASS)           */
+/* ============================================================ */
 
 :root {
-  --jlg-bg-1: #0b1120;
-  --jlg-bg-2: #131b34;
-  --jlg-bg-3: #0f1729;
-  --jlg-accent: #2dd4bf;
-  --jlg-accent-dim: #14b8a6;
-  --jlg-warn: #fbbf24;
-  --jlg-danger: #f87171;
-  --jlg-text: #e6ebf5;
-  --jlg-text-dim: #9aa5b8;
-  --jlg-glass-bg: rgba(255, 255, 255, 0.06);
-  --jlg-glass-border: rgba(255, 255, 255, 0.14);
+  /* Variable Warna Utama (Biru - Hitam) */
+  --jlg-bg-dark: #050b14;
+  --jlg-card-bg: rgba(10, 25, 47, 0.65);
+  --jlg-card-strong: rgba(13, 30, 58, 0.85);
+  --jlg-border: rgba(56, 189, 248, 0.2);
+  
+  --jlg-text-main: #f1f5f9;
+  --jlg-text-dim: #94a3b8;
+  
+  --jlg-accent: #38bdf8;       /* Biru terang / Cyan */
+  --jlg-accent-hover: #0284c7;
+  --jlg-warn: #f59e0b;         /* Amber / Gold petir */
+  --jlg-danger: #ef4444;       /* Merah */
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-}
-
+/* Base Body dengan Background Gambar */
 body {
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: var(--jlg-text);
-  min-height: 100vh;
-  background: linear-gradient(120deg, var(--jlg-bg-1), var(--jlg-bg-2), var(--jlg-bg-3), var(--jlg-bg-1));
-  background-size: 300% 300%;
-  animation: jlgGradientShift 22s ease infinite;
-  overflow-x: hidden;
+  background-color: var(--jlg-bg-dark);
+  /* Ganti 'zeus-bg.jpg' sesuai nama/path file gambar Zeus kamu */
+  background-image: linear-gradient(to bottom, rgba(5, 11, 20, 0.75), rgba(5, 11, 20, 0.88)), url('zeus-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--jlg-text-main);
+  font-family: 'Inter', sans-serif;
 }
 
-.font-display {
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
-}
-
-@keyframes jlgGradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Ambient blobs behind glass content */
-.jlg-blob {
-  position: fixed;
-  border-radius: 999px;
-  filter: blur(90px);
-  opacity: 0.35;
-  z-index: 0;
-  pointer-events: none;
-}
-.jlg-blob-1 {
-  width: 420px; height: 420px;
-  background: #2dd4bf;
-  top: -120px; left: -100px;
-}
-.jlg-blob-2 {
-  width: 380px; height: 380px;
-  background: #6366f1;
-  bottom: -140px; right: -100px;
-}
-
-/* ---------- Glassmorphism core ---------- */
+/* Glassmorphism Effect untuk Card & Container */
 .glass {
-  background: var(--jlg-glass-bg);
-  border: 1px solid var(--jlg-glass-border);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-radius: 18px;
+  background: var(--jlg-card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--jlg-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--jlg-card-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
+/* Style Input Form */
 .glass-input {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: var(--jlg-text);
-  border-radius: 10px;
-  padding: 0.6rem 0.85rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--jlg-border);
+  color: #fff;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
   outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: all 0.2s ease;
 }
-.glass-input::placeholder { color: var(--jlg-text-dim); }
+
 .glass-input:focus {
   border-color: var(--jlg-accent);
-  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 
+/* Style Tombol (Buttons) */
 .jlg-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 10px;
-  padding: 0.6rem 1.1rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
-  cursor: pointer;
-  border: none;
+  transition: all 0.2s ease;
 }
-.jlg-btn:active { transform: scale(0.97); }
 
 .jlg-btn-primary {
-  background: linear-gradient(135deg, var(--jlg-accent), var(--jlg-accent-dim));
-  color: #06231f;
-  box-shadow: 0 8px 24px -8px rgba(45, 212, 191, 0.6);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
 }
-.jlg-btn-primary:hover { filter: brightness(1.08); }
+
+.jlg-btn-primary:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+}
 
 .jlg-btn-ghost {
-  background: rgba(255, 255, 255, 0.07);
-  color: var(--jlg-text);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--jlg-border);
+  color: var(--jlg-text-main);
 }
-.jlg-btn-ghost:hover { background: rgba(255, 255, 255, 0.13); }
+
+.jlg-btn-ghost:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
 
 .jlg-btn-danger {
-  background: rgba(248, 113, 113, 0.15);
-  color: #fecaca;
-  border: 1px solid rgba(248, 113, 113, 0.4);
-}
-.jlg-btn-danger:hover { background: rgba(248, 113, 113, 0.25); }
-
-/* ---------- Karyawan card (login grid) ---------- */
-.employee-card {
-  cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease;
-}
-.employee-card:hover {
-  transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.1);
-}
-.employee-photo {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
 }
 
-/* ---------- Modal ---------- */
-.jlg-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(3, 7, 18, 0.65);
-  backdrop-filter: blur(4px);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: jlgFadeIn 0.15s ease;
-}
-@keyframes jlgFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.jlg-modal {
-  animation: jlgPopIn 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-@keyframes jlgPopIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.jlg-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.4);
 }
 
-/* ---------- PIN dots ---------- */
-.pin-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  transition: background 0.1s ease;
-}
-.pin-dot.filled {
-  background: var(--jlg-accent);
-  border-color: var(--jlg-accent);
-}
-
-/* ---------- Broadcast running text ---------- */
-.jlg-marquee-track {
-  display: inline-block;
-  white-space: nowrap;
-  padding-left: 100%;
-  animation: jlgMarquee 22s linear infinite;
-}
-@keyframes jlgMarquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
-}
-
-/* ---------- Timer pulse (izin sedang berjalan) ---------- */
-.timer-pulse {
-  animation: jlgPulse 1.6s ease-in-out infinite;
-}
-@keyframes jlgPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5); }
-  50% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
-}
-
-/* ---------- Toast ---------- */
-#jlg-toast-container {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.jlg-toast {
-  min-width: 260px;
-  animation: jlgToastIn 0.2s ease;
-}
-@keyframes jlgToastIn {
-  from { opacity: 0; transform: translateX(24px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-/* ---------- Sidebar nav ---------- */
+/* Sidebar Navigation */
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.6rem 0.9rem;
-  border-radius: 10px;
-  color: var(--jlg-text-dim);
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
-  font-size: 0.92rem;
+  color: var(--jlg-text-dim);
+  transition: all 0.2s;
 }
+
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--jlg-text);
+  background: rgba(56, 189, 248, 0.1);
+  color: #fff;
 }
+
 .nav-item.active {
-  background: rgba(45, 212, 191, 0.14);
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.3) 0%, rgba(56, 189, 248, 0.1) 100%);
   color: var(--jlg-accent);
-  font-weight: 600;
+  border-left: 3px solid var(--jlg-accent);
 }
 
-/* ---------- Scrollbar ---------- */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
-}
-
-/* ---------- Utility ---------- */
-.page-section { display: none; }
-.page-section.active { display: block; animation: jlgFadeIn 0.2s ease; }
-
-table.jlg-table {
+/* Table Styling */
+.jlg-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-}
-table.jlg-table th {
   text-align: left;
-  padding: 0.6rem 0.8rem;
+  border-collapse: collapse;
+}
+
+.jlg-table th {
+  padding: 0.75rem;
   color: var(--jlg-text-dim);
-  font-weight: 600;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-table.jlg-table td {
-  padding: 0.6rem 0.8rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-table.jlg-table tr:hover td {
-  background: rgba(255, 255, 255, 0.04);
-  cursor: pointer;
+  border-bottom: 1px solid var(--jlg-border);
+  font-size: 0.75rem;
+  text-transform: uppercase;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
+.jlg-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.badge-green { background: rgba(45, 212, 191, 0.18); color: var(--jlg-accent); }
-.badge-amber { background: rgba(251, 191, 36, 0.18); color: var(--jlg-warn); }
-.badge-red { background: rgba(248, 113, 113, 0.18); color: var(--jlg-danger); }
 
-@media (max-width: 768px) {
-  .jlg-sidebar { display: none; }
+/* Employee Photo Avatar */
+.employee-photo {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid var(--jlg-accent);
+}
+
+/* Modal Backdrops */
+.jlg-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
 }
