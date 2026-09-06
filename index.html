@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JL GROUP — Sistem Manajemen Karyawan</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="text-sm">
+
+<div class="jlg-blob jlg-blob-1"></div>
+<div class="jlg-blob jlg-blob-2"></div>
+
+<div id="jlg-toast-container"></div>
+
+<!-- ============================================================ -->
+<!-- PAGE 1: AUTH / LOGIN                                          -->
+<!-- ============================================================ -->
+<div id="page-login" class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-10">
+  <div class="text-center mb-8">
+    <div class="font-display text-3xl font-bold tracking-tight">JL GROUP</div>
+    <p class="text-jlg-dim text-[13px] mt-1" style="color:var(--jlg-text-dim)">Sistem Manajemen Karyawan — pilih nama Anda untuk masuk</p>
+  </div>
+
+  <div id="login-status-banner" class="hidden glass mb-6 px-4 py-2 text-xs max-w-md text-center"></div>
+
+  <div id="employee-grid" class="glass-strong p-6 rounded-2xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-3xl w-full">
+    <!-- diisi oleh app.js -->
+    <div class="col-span-full text-center py-8" style="color:var(--jlg-text-dim)">Memuat data karyawan...</div>
+  </div>
+</div>
+
+<!-- Modal: IP tidak terdaftar -->
+<div id="modal-ip-blocked" class="jlg-modal-backdrop hidden">
+  <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-sm w-[90%] text-center">
+    <div class="text-4xl mb-3">⚠️</div>
+    <h3 class="font-display text-lg font-bold mb-2" style="color:var(--jlg-danger)">IP Anda Tidak Terdaftar</h3>
+    <p class="text-[13px] mb-1" style="color:var(--jlg-text-dim)">Login/absensi hanya dapat dilakukan dari jaringan kantor yang terdaftar.</p>
+    <p class="text-xs mb-4" style="color:var(--jlg-text-dim)">IP terdeteksi: <span id="detected-ip" class="font-mono">-</span></p>
+    <button onclick="closeModal('modal-ip-blocked')" class="jlg-btn jlg-btn-ghost w-full">Mengerti</button>
+  </div>
+</div>
+
+<!-- Modal: PIN Login -->
+<div id="modal-pin-login" class="jlg-modal-backdrop hidden">
+  <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-xs w-[90%] text-center">
+    <img id="pin-login-photo" class="employee-photo mx-auto mb-3" src="" alt="" />
+    <h3 id="pin-login-name" class="font-display font-bold text-base mb-1">-</h3>
+    <p class="text-xs mb-4" style="color:var(--jlg-text-dim)">Masukkan PIN untuk melanjutkan</p>
+
+    <div class="flex justify-center gap-3 mb-4" id="pin-dots">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+
+    <input id="pin-input" type="password" inputmode="numeric" maxlength="6" class="glass-input w-full text-center tracking-[0.5em] mb-2" placeholder="••••" oninput="onPinInput()" />
+    <p id="pin-error" class="text-xs mb-3 hidden" style="color:var(--jlg-danger)">PIN salah, coba lagi.</p>
+
+    <div class="flex gap-2">
+      <button onclick="closeModal('modal-pin-login')" class="jlg-btn jlg-btn-ghost flex-1">Batal</button>
+      <button onclick="submitPinLogin()" class="jlg-btn jlg-btn-primary flex-1">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MAIN APP SHELL (setelah login)                                -->
+<!-- ============================================================ -->
+<div id="app-shell" class="hidden relative z-10 min-h-screen">
+
+  <!-- Broadcast bar -->
+  <div id="broadcast-bar" class="glass px-4 py-1.5 text-xs mx-3 mt-3 rounded-full overflow-hidden hidden" style="color:var(--jlg-warn)">
+    <div class="jlg-marquee-track" id="broadcast-text">Selamat datang di JL GROUP.</div>
+  </div>
+
+  <div class="flex gap-4 p-3 md:p-4">
+    <!-- Sidebar -->
+    <aside class="jlg-sidebar glass-strong rounded-2xl p-4 w-60 shrink-0 h-fit sticky top-4">
+      <div class="font-display font-bold text-lg mb-1">JL GROUP</div>
+      <p class="text-[11px] mb-5" style="color:var(--jlg-text-dim)">Employee Management</p>
+
+      <nav class="flex flex-col gap-1" id="sidebar-nav">
+        <div class="nav-item active" data-menu="dashboard" onclick="navigateTo('dashboard')">📊 <span>Dashboard</span></div>
+        <div class="nav-item" data-menu="absensi" onclick="navigateTo('absensi')">🕒 <span>Absensi</span></div>
+        <div class="nav-item" data-menu="karyawan" onclick="navigateTo('karyawan')">👥 <span>Data Karyawan</span></div>
+        <div class="nav-item" data-menu="izin" onclick="navigateTo('izin')">☕ <span>Aktivitas Izin</span></div>
+        <div class="nav-item" data-menu="riwayat" onclick="navigateTo('riwayat')">🗂️ <span>Riwayat</span></div>
+        <div class="nav-item" data-menu="pengaturan" onclick="navigateTo('pengaturan')">⚙️ <span>Pengaturan</span></div>
+      </nav>
+
+      <div class="mt-6 pt-4 border-t border-white/10">
+        <div class="flex items-center gap-2 mb-3">
+          <img id="sidebar-user-photo" class="employee-photo !w-9 !h-9" src="" alt="" />
+          <div class="min-w-0">
+            <div id="sidebar-user-name" class="font-semibold text-xs truncate">-</div>
+            <div id="sidebar-user-divisi" class="text-[11px] truncate" style="color:var(--jlg-text-dim)">-</div>
+          </div>
+        </div>
+        <button onclick="logout()" class="jlg-btn jlg-btn-danger w-full text-xs">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Mobile top bar -->
+    <div class="md:hidden fixed bottom-3 left-3 right-3 z-40 glass-strong rounded-2xl p-2 flex justify-around" id="mobile-nav">
+      <div onclick="navigateTo('dashboard')" class="text-lg cursor-pointer">📊</div>
+      <div onclick="navigateTo('absensi')" class="text-lg cursor-pointer">🕒</div>
+      <div onclick="navigateTo('izin')" class="text-lg cursor-pointer">☕</div>
+      <div onclick="navigateTo('riwayat')" class="text-lg cursor-pointer">🗂️</div>
+      <div onclick="navigateTo('pengaturan')" class="text-lg cursor-pointer">⚙️</div>
+    </div>
+
+    <!-- Main content -->
+    <main class="flex-1 min-w-0 pb-20 md:pb-4">
+
+      <!-- DASHBOARD -->
+      <section id="section-dashboard" class="page-section active">
+        <h1 class="font-display text-xl font-bold mb-4">Dashboard</h1>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div class="glass rounded-2xl p-4">
+            <div class="text-[11px]" style="color:var(--jlg-text-dim)">Total Karyawan</div>
+            <div id="stat-total" class="font-display text-2xl font-bold mt-1">-</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-[11px]" style="color:var(--jlg-text-dim)">Hadir Hari Ini</div>
+            <div id="stat-hadir" class="font-display text-2xl font-bold mt-1" style="color:var(--jlg-accent)">-</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-[11px]" style="color:var(--jlg-text-dim)">Sedang Izin</div>
+            <div id="stat-izin" class="font-display text-2xl font-bold mt-1" style="color:var(--jlg-warn)">-</div>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <div class="text-[11px]" style="color:var(--jlg-text-dim)">Off Day</div>
+            <div id="stat-off" class="font-display text-2xl font-bold mt-1" style="color:var(--jlg-text-dim)">-</div>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h2 class="font-semibold mb-3 text-[13px]">Aktivitas terbaru</h2>
+          <div id="dashboard-recent" class="space-y-2 text-xs"></div>
+        </div>
+      </section>
+
+      <!-- ABSENSI -->
+      <section id="section-absensi" class="page-section">
+        <h1 class="font-display text-xl font-bold mb-4">Absensi</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+          <button onclick="doAbsen('masuk')" class="jlg-btn jlg-btn-primary py-6 text-base">✅ Absen Hadir</button>
+          <button onclick="doAbsen('pulang')" class="jlg-btn jlg-btn-ghost py-6 text-base">🚪 Absen Pulang</button>
+        </div>
+        <div class="glass rounded-2xl p-4 mt-6 max-w-xl">
+          <h2 class="font-semibold mb-2 text-[13px]">Status Anda Hari Ini</h2>
+          <div id="absen-status-today" class="text-xs" style="color:var(--jlg-text-dim)">Memuat...</div>
+        </div>
+      </section>
+
+      <!-- Modal Absen -->
+      <div id="modal-absen" class="jlg-modal-backdrop hidden">
+        <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-xs w-[90%] text-center">
+          <div id="absen-modal-emoji" class="text-4xl mb-3">👋</div>
+          <h3 id="absen-modal-title" class="font-display font-bold text-lg mb-2">Selamat Datang!</h3>
+          <p id="absen-modal-desc" class="text-xs mb-4" style="color:var(--jlg-text-dim)">Absen hadir tercatat pukul -</p>
+          <button onclick="closeModal('modal-absen')" class="jlg-btn jlg-btn-primary w-full">Tutup</button>
+        </div>
+      </div>
+
+      <!-- DATA KARYAWAN -->
+      <section id="section-karyawan" class="page-section">
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="font-display text-xl font-bold">Data Karyawan</h1>
+          <button onclick="openModal('modal-tambah-karyawan')" class="jlg-btn jlg-btn-primary text-xs">+ Tambah Karyawan</button>
+        </div>
+        <div class="glass rounded-2xl p-3 overflow-x-auto">
+          <table class="jlg-table">
+            <thead><tr><th></th><th>Nama</th><th>Divisi</th><th>Status</th></tr></thead>
+            <tbody id="karyawan-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Modal Tambah Karyawan -->
+      <div id="modal-tambah-karyawan" class="jlg-modal-backdrop hidden">
+        <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-sm w-[90%]">
+          <h3 class="font-display font-bold text-base mb-4">Tambah Karyawan</h3>
+          <div class="space-y-3">
+            <input id="new-nama" class="glass-input w-full" placeholder="Nama lengkap" />
+            <input id="new-divisi" class="glass-input w-full" placeholder="Divisi" />
+            <input id="new-foto" class="glass-input w-full" placeholder="URL Foto" />
+            <input id="new-pin" class="glass-input w-full" placeholder="PIN Verifikasi (angka)" inputmode="numeric" />
+          </div>
+          <div class="flex gap-2 mt-5">
+            <button onclick="closeModal('modal-tambah-karyawan')" class="jlg-btn jlg-btn-ghost flex-1">Batal</button>
+            <button onclick="submitTambahKaryawan()" class="jlg-btn jlg-btn-primary flex-1">Simpan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Detail/Edit Karyawan -->
+      <div id="modal-detail-karyawan" class="jlg-modal-backdrop hidden">
+        <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-sm w-[90%]">
+          <div class="text-center mb-4">
+            <img id="detail-photo" class="employee-photo mx-auto mb-2" src="" alt="" />
+            <h3 id="detail-nama" class="font-display font-bold text-base">-</h3>
+            <p id="detail-divisi" class="text-xs" style="color:var(--jlg-text-dim)">-</p>
+          </div>
+          <div id="detail-view-mode" class="space-y-2">
+            <button onclick="toggleEditKaryawan(true)" class="jlg-btn jlg-btn-ghost w-full text-xs">✏️ Edit</button>
+            <button onclick="closeModal('modal-detail-karyawan')" class="jlg-btn jlg-btn-ghost w-full text-xs">Tutup</button>
+          </div>
+          <div id="detail-edit-mode" class="space-y-3 hidden">
+            <input id="edit-nama" class="glass-input w-full" placeholder="Nama" />
+            <input id="edit-divisi" class="glass-input w-full" placeholder="Divisi" />
+            <input id="edit-foto" class="glass-input w-full" placeholder="URL Foto" />
+            <select id="edit-status" class="glass-input w-full">
+              <option value="aktif">Aktif</option>
+              <option value="nonaktif">Nonaktif</option>
+            </select>
+            <div class="flex gap-2">
+              <button onclick="toggleEditKaryawan(false)" class="jlg-btn jlg-btn-ghost flex-1 text-xs">Batal</button>
+              <button onclick="submitEditKaryawan()" class="jlg-btn jlg-btn-primary flex-1 text-xs">Simpan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AKTIVITAS IZIN -->
+      <section id="section-izin" class="page-section">
+        <h1 class="font-display text-xl font-bold mb-4">Aktivitas Izin</h1>
+
+        <div id="izin-idle-view" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
+          <div class="glass rounded-2xl p-4 text-center employee-card" onclick="openIzinModal('Merokok')">🚬<div class="text-xs mt-2">Merokok</div></div>
+          <div class="glass rounded-2xl p-4 text-center employee-card" onclick="openIzinModal('Beli/Ambil Makan')">🍱<div class="text-xs mt-2">Beli/Ambil Makan</div></div>
+          <div class="glass rounded-2xl p-4 text-center employee-card" onclick="openIzinModal('Toilet')">🚻<div class="text-xs mt-2">Toilet</div></div>
+          <div class="glass rounded-2xl p-4 text-center employee-card" onclick="openIzinModal('Ibadah')">🕌<div class="text-xs mt-2">Ibadah</div></div>
+          <div class="glass rounded-2xl p-4 text-center employee-card" onclick="openIzinModal('Istirahat')">🍵<div class="text-xs mt-2">Istirahat</div></div>
+        </div>
+
+        <div id="izin-running-view" class="hidden glass-strong rounded-2xl p-6 max-w-sm timer-pulse">
+          <p class="text-xs mb-1" style="color:var(--jlg-text-dim)">Sedang izin:</p>
+          <h2 id="izin-running-jenis" class="font-display font-bold text-lg mb-3">-</h2>
+          <div id="izin-timer" class="font-display text-4xl font-bold mb-4" style="color:var(--jlg-warn)">00:00</div>
+          <button onclick="openStopIzinModal()" class="jlg-btn jlg-btn-danger w-full">⏹ Selesai / Kembali</button>
+        </div>
+      </section>
+
+      <!-- Modal Mulai Izin -->
+      <div id="modal-mulai-izin" class="jlg-modal-backdrop hidden">
+        <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-xs w-[90%] text-center">
+          <h3 class="font-display font-bold text-base mb-2">Mulai izin <span id="mulai-izin-jenis"></span>?</h3>
+          <p class="text-xs mb-4" style="color:var(--jlg-text-dim)">Timer akan berjalan sejak Anda menekan Mulai, dan tetap presisi meski halaman di-refresh.</p>
+          <div class="flex gap-2">
+            <button onclick="closeModal('modal-mulai-izin')" class="jlg-btn jlg-btn-ghost flex-1">Batal</button>
+            <button onclick="confirmMulaiIzin()" class="jlg-btn jlg-btn-primary flex-1">Mulai</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Stop Izin -->
+      <div id="modal-stop-izin" class="jlg-modal-backdrop hidden">
+        <div class="jlg-modal glass-strong rounded-2xl p-6 max-w-xs w-[90%] text-center">
+          <div class="text-4xl mb-2">✅</div>
+          <h3 class="font-display font-bold text-base mb-1">Selamat Kembali!</h3>
+          <p class="text-xs mb-4" style="color:var(--jlg-text-dim)">Durasi izin: <span id="stop-izin-durasi" class="font-semibold">-</span></p>
+          <button onclick="confirmStopIzin()" class="jlg-btn jlg-btn-primary w-full">Selesai</button>
+        </div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <section id="section-riwayat" class="page-section">
+        <h1 class="font-display text-xl font-bold mb-4">Riwayat</h1>
+        <div class="glass rounded-2xl p-3 overflow-x-auto">
+          <table class="jlg-table">
+            <thead><tr><th>Nama</th><th>Jenis</th><th>Detail</th><th>Tanggal</th></tr></thead>
+            <tbody id="riwayat-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PENGATURAN -->
+      <section id="section-pengaturan" class="page-section">
+        <h1 class="font-display text-xl font-bold mb-4">Pengaturan</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="glass rounded-2xl p-4">
+            <h2 class="font-semibold text-[13px] mb-3">Koneksi Backend</h2>
+            <p class="text-[11px] mb-2" style="color:var(--jlg-text-dim)">URL utama diatur di file <code>config.js</code> agar berlaku untuk semua karyawan. Isi di bawah hanya override sementara khusus di browser ini.</p>
+            <label class="text-[11px]" style="color:var(--jlg-text-dim)">URL Web App Google Apps Script (override lokal)</label>
+            <input id="setting-gas-url" class="glass-input w-full mt-1 mb-3" placeholder="https://script.google.com/macros/s/.../exec" />
+            <div class="flex gap-2">
+              <button onclick="saveGasUrl()" class="jlg-btn jlg-btn-primary text-xs flex-1">Simpan Override</button>
+              <button onclick="clearGasUrlOverride()" class="jlg-btn jlg-btn-ghost text-xs flex-1">Reset ke Default</button>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <h2 class="font-semibold text-[13px] mb-3">Jam Kerja</h2>
+            <div class="flex gap-2">
+              <div class="flex-1">
+                <label class="text-[11px]" style="color:var(--jlg-text-dim)">Mulai</label>
+                <input id="setting-jam-mulai" type="time" class="glass-input w-full mt-1" />
+              </div>
+              <div class="flex-1">
+                <label class="text-[11px]" style="color:var(--jlg-text-dim)">Selesai</label>
+                <input id="setting-jam-selesai" type="time" class="glass-input w-full mt-1" />
+              </div>
+            </div>
+            <button onclick="saveJamKerja()" class="jlg-btn jlg-btn-primary text-xs w-full mt-3">Simpan Jam Kerja</button>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <h2 class="font-semibold text-[13px] mb-3">Broadcast Info</h2>
+            <textarea id="setting-broadcast" class="glass-input w-full" rows="3" placeholder="Pesan berjalan di header..."></textarea>
+            <button onclick="saveBroadcast()" class="jlg-btn jlg-btn-primary text-xs w-full mt-3">Simpan Broadcast</button>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <h2 class="font-semibold text-[13px] mb-3">Batas Durasi Izin</h2>
+            <label class="text-[11px]" style="color:var(--jlg-text-dim)">Dalam menit</label>
+            <input id="setting-limit-izin" type="number" class="glass-input w-full mt-1 mb-3" placeholder="30" />
+            <button onclick="saveLimitIzin()" class="jlg-btn jlg-btn-primary text-xs w-full">Simpan Batas</button>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <h2 class="font-semibold text-[13px] mb-3">IP Whitelist</h2>
+            <label class="text-[11px]" style="color:var(--jlg-text-dim)">Satu IP per baris</label>
+            <textarea id="setting-ip-whitelist" class="glass-input w-full" rows="3" placeholder="103.xxx.xxx.xxx"></textarea>
+            <button onclick="saveIpWhitelist()" class="jlg-btn jlg-btn-primary text-xs w-full mt-3">Simpan Whitelist</button>
+          </div>
+
+          <div class="glass rounded-2xl p-4">
+            <h2 class="font-semibold text-[13px] mb-3">Hak Akses Menu</h2>
+            <label class="text-[11px]" style="color:var(--jlg-text-dim)">Pilih karyawan</label>
+            <select id="setting-hakakses-karyawan" class="glass-input w-full mt-1 mb-3" onchange="loadHakAksesFor(this.value)"></select>
+            <div id="setting-hakakses-checkboxes" class="grid grid-cols-2 gap-2 text-xs mb-3"></div>
+            <button onclick="saveHakAkses()" class="jlg-btn jlg-btn-primary text-xs w-full">Simpan Hak Akses</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
