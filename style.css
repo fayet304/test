@@ -1,407 +1,289 @@
 /* ============================================================
-   TEMA: NEON GLOW / DARK ANIMATED
-   Kelas kustom pelengkap Tailwind + override warna dasar agar
-   seluruh aplikasi tampil dark dengan aksen neon & animasi.
-   (Tidak memakai elemen/istilah perjudian apa pun - murni gaya
-   visual neon-glow yang enerjik.)
+   TEMA: CLASSIC BLUE & SOFT LIGHT (SWIPER / GAMING APP STYLE)
+   Warna Utama: Soft Blue (#71a9f1), Bright Blue (#3a9ce8)
+   Background: Light Soft Gray (#f4f6fa)
    ============================================================ */
 
 :root {
-  --neon-pink: #0091ff;
-  --neon-purple: #0047d6;
-  --neon-blue: #5fd4ff;
-  --neon-gold: #ffd23f;
-  --bg-deep: #030914;
-  --bg-panel: rgba(8, 22, 46, 0.75);
+  --blue-main: #71a9f1;
+  --blue-bright: #3a9ce8;
+  --blue-dark: #2a72b8;
+  --bg-light: #f4f6fa;
+  --panel-bg: #ffffff;
+  --text-dark: #333333;
+  --text-muted: #959aa5;
 }
 
-/* ---------- BACKGROUND DASAR (override bg-slate-50 di body) ---------- */
-body.bg-slate-50 {
-  background: var(--bg-deep) !important;
-  color: #f1f5ff !important;
-  position: relative;
-  overflow-x: hidden;
+/* ---------- RESET & BACKGROUND DASAR ---------- */
+body, body.bg-slate-50 {
+  background-color: var(--bg-light) !important;
+  color: var(--text-dark) !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-/* Aurora bergerak di background */
-body.bg-slate-50::before {
-  content: '';
-  position: fixed;
-  inset: -20%;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(40% 35% at 20% 25%, rgba(0, 145, 255, 0.35), transparent 70%),
-    radial-gradient(35% 40% at 80% 20%, rgba(95, 212, 255, 0.28), transparent 70%),
-    radial-gradient(45% 45% at 50% 85%, rgba(0, 71, 214, 0.3), transparent 70%);
-  filter: blur(40px);
-  animation: auroraMove 16s ease-in-out infinite alternate;
-}
-@keyframes auroraMove {
-  0%   { transform: translate(0, 0) scale(1); }
-  50%  { transform: translate(3%, -4%) scale(1.08); }
-  100% { transform: translate(-4%, 3%) scale(1.03); }
+/* Hapus animasi particle neon lama */
+.neon-particle, body.bg-slate-50::before {
+  display: none !important;
 }
 
-/* Partikel titik neon melayang (dibuat via JS, lihat app.js) */
-.neon-particle {
-  position: fixed;
-  border-radius: 9999px;
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(1px);
-  animation: floatParticle linear infinite;
-  opacity: 0.7;
-}
-@keyframes floatParticle {
-  0%   { transform: translateY(0) translateX(0); opacity: 0; }
-  10%  { opacity: 0.8; }
-  90%  { opacity: 0.8; }
-  100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+header, main, footer { 
+  position: relative; 
+  z-index: 1; 
 }
 
-header, main, footer { position: relative; z-index: 1; }
-
-/* ---------- HEADER ---------- */
-header.bg-white {
-  background: rgba(10, 1, 24, 0.85) !important;
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 145, 255, 0.35) !important;
-  box-shadow: 0 1px 20px rgba(0, 71, 214, 0.25);
+/* ---------- HEADER & NAVBAR (TABS STYLE) ---------- */
+header.bg-white, .tabs {
+  background: var(--blue-main) !important;
+  border-bottom: none !important;
+  box-shadow: 0 0.2rem 0.4rem rgba(0, 0, 0, 0.15) !important;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
+
+header span.font-bold, header a, .tabs .tab {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
 header .bg-brand-600 {
-  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple)) !important;
-  box-shadow: 0 0 18px rgba(0, 145, 255, 0.7);
-  animation: logoPulse 2.4s ease-in-out infinite;
-}
-@keyframes logoPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(0, 145, 255, 0.6); }
-  50% { box-shadow: 0 0 26px rgba(95, 212, 255, 0.8); }
-}
-header span.font-bold {
-  color: #f1f5ff !important;
-  text-shadow: 0 0 12px rgba(95, 212, 255, 0.5);
-}
-header .text-brand-600 {
-  color: var(--neon-pink) !important;
+  background: var(--blue-bright) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  animation: none !important;
 }
 
-/* ---------- ANNOUNCEMENT BAR ---------- */
-#announcement-bar.bg-amber-50 {
-  background: rgba(255, 210, 63, 0.12) !important;
-  border-bottom: 1px solid rgba(255, 210, 63, 0.4) !important;
-}
-#announcement-bar, #announcement-bar p, #announcement-bar svg {
-  color: var(--neon-gold) !important;
+/* ---------- ANNOUNCEMENT / NOTICE BAR ---------- */
+#announcement-bar, .notice {
+  background: #ffffff !important;
+  min-height: 3rem;
+  border-radius: 0 0 1rem 1rem !important;
+  box-shadow: 0.2rem 0.4rem 0.6rem rgba(0, 0, 0, 0.07) !important;
+  border: none !important;
+  color: var(--text-dark) !important;
+  display: flex;
+  align-items: center;
 }
 
-/* ---------- NAV ---------- */
+#announcement-bar p, #announcement-bar svg {
+  color: #d97706 !important; /* Warna aksen pengumuman */
+}
+
+/* ---------- NAV BUTTONS ---------- */
 .nav-btn, .nav-btn-mobile {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #b9b3d9;
-  transition: all 0.2s;
+  color: #ffffff !important;
+  transition: all 0.3s ease;
+  background: transparent;
 }
-.nav-btn-mobile { padding: 0.65rem 0.5rem; text-align: left; }
+
 .nav-btn:hover, .nav-btn-mobile:hover {
-  color: #fff;
-  text-shadow: 0 0 10px var(--neon-blue);
+  background: rgba(255, 255, 255, 0.2) !important;
 }
+
 .nav-btn.active, .nav-btn-mobile.active {
-  background: linear-gradient(90deg, rgba(255,47,176,0.25), rgba(95,212,255,0.2));
-  color: #fff;
-  box-shadow: 0 0 14px rgba(0, 145, 255, 0.45) inset, 0 0 10px rgba(95, 212, 255, 0.3);
+  background: var(--blue-bright) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
-#menu-toggle { color: #f1f5ff; }
-#menu-toggle:hover { background: rgba(255,255,255,0.08) !important; }
-#nav-mobile.border-t { border-color: rgba(255,255,255,0.1) !important; }
-
-/* ---------- HEADING GLITCH STYLE ---------- */
+/* ---------- HEADINGS ---------- */
 h1.text-2xl {
   background: none !important;
-  -webkit-background-clip: unset;
-  background-clip: unset;
-  color: #f5f8ff !important;
+  color: #222222 !important;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: normal;
   text-transform: uppercase;
-  text-shadow: 2px 0 rgba(0, 145, 255, 0.6), -2px 0 rgba(255, 60, 90, 0.45);
+  text-shadow: none !important;
 }
 
-/* ---------- PANEL CARD (accordion) ---------- */
-.panel-card {
-  background: var(--bg-panel);
-  border: 1px solid rgba(95, 212, 255, 0.15);
-  border-radius: 0.9rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-  overflow: hidden;
-}
-.panel-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.25rem;
-  background: rgba(95, 212, 255, 0.06);
-  border-bottom: 1px solid rgba(95, 212, 255, 0.15);
-  cursor: pointer;
-}
-.panel-header-title {
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--neon-blue);
-  text-transform: uppercase;
-}
-.panel-header .chevron {
-  width: 1.1rem;
-  height: 1.1rem;
-  color: var(--neon-blue);
-  transition: transform 0.25s;
-}
-.panel-header.collapsed .chevron { transform: rotate(-90deg); }
-.panel-content {
-  transition: grid-template-rows 0.25s ease;
-}
-.panel-content.collapsed { display: none; }
-
-/* ---------- CARI NAMA / AUTOCOMPLETE ---------- */
-.nama-list {
-  margin-top: 0.4rem;
-  max-height: 11rem;
-  overflow-y: auto;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 0.5rem;
-  background: rgba(0,0,0,0.4);
-}
-.nama-list-item {
-  padding: 0.5rem 0.85rem;
-  font-size: 0.85rem;
-  color: #e3e0f7;
-  cursor: pointer;
-}
-.nama-list-item:hover, .nama-list-item.highlight {
-  background: rgba(95, 212, 255, 0.15);
-  color: #fff;
-}
-
-/* ---------- RANKING IZIN LIST ---------- */
-.ranking-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.55rem 1.25rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #e3e0f7;
-}
-.ranking-count {
-  background: var(--neon-blue);
-  color: #04101f;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 0.1rem 0.5rem;
-  border-radius: 0.3rem;
-}
-
-/* ---------- TOMBOL START/STOP TIMER IZIN ---------- */
-.btn-start, .btn-stop {
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  border-radius: 0.5rem;
-  padding: 0.7rem;
-  color: white;
-  transition: all 0.2s;
-}
-.btn-start { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.btn-start:hover:not(:disabled) { box-shadow: 0 0 18px rgba(34, 197, 94, 0.6); transform: translateY(-1px); }
-.btn-stop { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.btn-stop:hover:not(:disabled) { box-shadow: 0 0 18px rgba(239, 68, 68, 0.6); transform: translateY(-1px); }
-.btn-start:disabled, .btn-stop:disabled { background: rgba(255,255,255,0.06); color: #6b6489; cursor: not-allowed; }
-
-#izin-timer-clock { text-shadow: 0 0 16px currentColor; animation: valueGlow 1.4s ease-in-out infinite; }
-
-
-.text-ink { color: #f1f5ff !important; }
-
-/* ---------- CARDS / PANELS ---------- */
+/* ---------- PANEL CARD & STAT CARDS ---------- */
+.panel-card,
 .stat-card,
 .bg-white.rounded-xl,
 .bg-white.border,
 form.bg-white {
-  background: var(--bg-panel) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 8px 30px rgba(0,0,0,0.5);
-  transition: box-shadow 0.3s, transform 0.3s;
+  background: var(--panel-bg) !important;
+  border: 0.1rem solid #ffffff !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 3px 12px rgba(209, 221, 242, 0.5) !important;
+  backdrop-filter: none !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 .stat-card:hover,
 .bg-white.rounded-xl:hover {
-  box-shadow: 0 0 24px rgba(0, 71, 214, 0.35), 0 8px 30px rgba(0,0,0,0.5);
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(113, 169, 241, 0.3) !important;
 }
 
-.bg-slate-50.text-slate-500 { background: rgba(255,255,255,0.04) !important; }
-.divide-slate-100 > * + *,
-.divide-y.divide-slate-100 { border-color: rgba(255,255,255,0.07) !important; }
-
-.stat-label { color: #9c94c4; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em; }
-.stat-value {
-  font-size: 2.1rem;
-  font-weight: 800;
-  line-height: 1.1;
-  text-shadow: 0 0 18px currentColor;
-  animation: valueGlow 2.6s ease-in-out infinite;
-}
-@keyframes valueGlow {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.35); }
+.panel-header {
+  background: linear-gradient(to right, #f4f6fa, #f5f7fa) !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 0.9rem 1.25rem;
+  cursor: pointer;
 }
 
-/* ---------- FORM ELEMENTS ---------- */
-.form-label { color: #d7d2f0; font-weight: 700; }
-.form-input {
-  background: rgba(0,0,0,0.35) !important;
-  border: 1px solid rgba(255,255,255,0.15) !important;
-  color: #f1f5ff !important;
-}
-.form-input::placeholder { color: #756e9c; }
-.form-input:focus {
-  border-color: var(--neon-blue) !important;
-  box-shadow: 0 0 0 3px rgba(95, 212, 255, 0.2), 0 0 16px rgba(95, 212, 255, 0.35) !important;
-}
-select.form-input option { background: #150a2c; color: #f1f5ff; }
-
-.jenis-btn {
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.03);
-  color: #d7d2f0;
+.panel-header-title {
+  color: var(--blue-dark) !important;
   font-weight: 700;
-  transition: all 0.2s;
-}
-.jenis-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(95,212,255,0.35); }
-.jenis-btn.active {
-  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 0 20px rgba(0, 145, 255, 0.6);
-  animation: none;
 }
 
-/* ---------- TOMBOL UTAMA (gradient bergerak + shimmer) ---------- */
+.panel-header .chevron {
+  color: var(--blue-dark) !important;
+}
+
+/* ---------- FORM ELEMENTS & INPUTS ---------- */
+.form-label {
+  color: #444444 !important;
+  font-weight: 600;
+}
+
+.form-input, .user input {
+  background: #eeeeee !important;
+  border: 1px solid #dddddd !important;
+  color: #333333 !important;
+  border-radius: 0.5rem !important;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.form-input:focus {
+  border-color: var(--blue-bright) !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(58, 156, 232, 0.2) !important;
+}
+
+select.form-input option {
+  background: #ffffff;
+  color: #333333;
+}
+
+/* ---------- TOMBOL UTAMA & AKSI ---------- */
 #btn-submit-absen:not(:disabled),
 .btn-admin-save,
-#form-admin-login button[type="submit"] {
-  background: linear-gradient(90deg, var(--neon-blue), #3b82f6) !important;
-  background-size: 200% 100%;
-  animation: gradientShift 4s linear infinite;
+#form-admin-login button[type="submit"],
+.user .loginBtn {
+  background: var(--blue-bright) !important;
   border: none !important;
-  color: #04101f !important;
-  font-weight: 800;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(95, 212, 255, 0.5);
-}
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
-}
-#btn-submit-absen:not(:disabled):hover,
-.btn-admin-save:hover {
-  transform: translateY(-1px) scale(1.015);
-  box-shadow: 0 0 30px rgba(95, 212, 255, 0.6);
-}
-#btn-submit-absen:disabled {
-  background: rgba(255,255,255,0.06) !important;
-  color: #6b6489 !important;
-}
-
-#btn-verify-pin.bg-slate-800 {
-  background: linear-gradient(135deg, #1b0f38, #3a1863) !important;
-  border: 1px solid rgba(95, 212, 255, 0.4);
-}
-#btn-verify-pin.bg-slate-800:hover { box-shadow: 0 0 14px rgba(95, 212, 255, 0.5); }
-
-/* ---------- SUB NAV ADMIN ---------- */
-.sub-nav-btn {
-  padding: 0.6rem 0.9rem;
-  font-size: 0.85rem;
+  color: #ffffff !important;
   font-weight: 700;
-  color: #9c94c4;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 2px 6px rgba(58, 156, 232, 0.4) !important;
+  transition: background 0.3s ease, transform 0.2s ease !important;
+  animation: none !important;
 }
-.sub-nav-btn.active {
-  color: #fff;
-  border-bottom-color: var(--neon-blue);
-  text-shadow: 0 0 10px var(--neon-blue);
+
+#btn-submit-absen:not(:disabled):hover,
+.btn-admin-save:hover,
+.user .loginBtn:hover {
+  background: var(--blue-dark) !important;
+  transform: translateY(-1px);
 }
-#admin-subnav.border-b { border-color: rgba(255,255,255,0.1) !important; }
 
-.admin-sub-section { animation: fadeIn 0.25s ease; }
+#btn-submit-absen:disabled {
+  background: #cccccc !important;
+  color: #666666 !important;
+  box-shadow: none !important;
+}
 
-/* ---------- FEEDBACK / BADGES ---------- */
-.save-feedback.success { background: rgba(0, 255, 170, 0.1); color: #4dffc3; }
-.save-feedback.error { background: rgba(255, 47, 90, 0.12); color: #ff7a9a; }
-#pin-feedback.bg-green-50 { background: rgba(0,255,170,0.1) !important; color: #4dffc3 !important; }
-#pin-feedback.bg-red-50 { background: rgba(255,47,90,0.12) !important; color: #ff7a9a !important; }
-#form-feedback.bg-green-50 { background: rgba(0,255,170,0.1) !important; color: #4dffc3 !important; }
-#form-feedback.bg-red-50 { background: rgba(255,47,90,0.12) !important; color: #ff7a9a !important; }
-#admin-login-feedback.bg-red-50 { background: rgba(255,47,90,0.12) !important; color: #ff7a9a !important; }
+/* ---------- TOMBOL PILIHAN JENIS ABSEN ---------- */
+.jenis-btn {
+  border: 1px solid #dddddd;
+  background: #f8fafc;
+  color: #555555;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
 
+.jenis-btn:hover {
+  border-color: var(--blue-bright);
+  color: var(--blue-bright);
+}
+
+.jenis-btn.active {
+  background: var(--blue-main) !important;
+  border-color: var(--blue-main) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(113, 169, 241, 0.4) !important;
+}
+
+/* ---------- TIMER IZIN (START/STOP) ---------- */
+.btn-start {
+  background: #22c55e !important;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3) !important;
+}
+
+.btn-stop {
+  background: #ef4444 !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* ---------- STATISTIK & VALUES ---------- */
+.stat-label {
+  color: var(--text-muted) !important;
+}
+
+.stat-value {
+  color: var(--blue-dark) !important;
+  font-size: 2.1rem;
+  font-weight: 800;
+  text-shadow: none !important;
+  animation: none !important;
+}
+
+/* ---------- TABEL RIWAYAT & KARYAWAN ---------- */
+table thead, table thead.bg-slate-50 {
+  background: linear-gradient(to right, #f4f6fa, #f5f7fa) !important;
+  color: #444444 !important;
+}
+
+table tbody tr {
+  border-bottom: 1px solid #eeeeee;
+}
+
+table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+/* ---------- BADGES / STATUS ---------- */
 .badge {
   display: inline-block;
-  padding: 0.15rem 0.6rem;
-  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
   font-size: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 0 10px currentColor;
+  box-shadow: none !important;
 }
-.badge-masuk { background: rgba(95, 212, 255, 0.15); color: var(--neon-blue); }
-.badge-pulang { background: rgba(0, 71, 214, 0.18); color: #8fd6ff; }
-.badge-izin { background: rgba(255, 210, 63, 0.15); color: var(--neon-gold); }
-.badge-aktif { background: rgba(0, 255, 170, 0.12); color: #4dffc3; }
-.badge-nonaktif { background: rgba(255,255,255,0.06); color: #9c94c4; box-shadow: none; }
 
-/* ---------- TABEL RIWAYAT / KARYAWAN ---------- */
-table thead.bg-slate-50 { background: rgba(255,255,255,0.04) !important; }
-table tbody tr:hover { background: rgba(255,255,255,0.03); }
-a.text-brand-600 { color: var(--neon-blue) !important; text-shadow: 0 0 8px rgba(95,212,255,0.4); }
-.text-brand-600 { color: var(--neon-blue) !important; }
-.hover\:text-brand-700:hover { color: #7fefff !important; }
+.badge-masuk, .badge-aktif {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-pulang {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.badge-izin {
+  background: #fef3c7;
+  color: #b45309;
+}
 
 /* ---------- FOOTER ---------- */
-footer.text-slate-400 { color: #6b6489 !important; }
-
-/* ---------- ANIMASI DASAR ---------- */
-.tab-section { animation: fadeIn 0.25s ease; }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ---------- CONFETTI SUKSES ABSEN ---------- */
-.confetti-piece {
-  position: fixed;
-  top: -10px;
-  z-index: 100;
-  pointer-events: none;
-  border-radius: 2px;
-  animation: confettiFall linear forwards;
-}
-@keyframes confettiFall {
-  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
+footer {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border-top: 1px solid #e5e7eb;
+  padding: 1.5rem 0;
 }
